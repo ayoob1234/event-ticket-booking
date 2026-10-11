@@ -1,0 +1,16 @@
+@'
+.env
+.env.*
+!.env.example
+
+node_modules/
+client/dist/
+server/dist/
+
+*.log
+npm-debug.log*
+
+.vscode/
+.DS_Store
+Thumbs.db
+'@ | Set-Content -Path .gitignore

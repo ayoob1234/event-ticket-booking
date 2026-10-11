@@ -1,0 +1,25 @@
+{
+  "name": "event-ticket-booking-server",
+  "version": "1.0.0",
+  "description": "Event Ticket Booking Backend",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^10.1.0",
+    "pg": "^8.23.0",
+    "qrcode": "^1.5.4",
+    "razorpay": "^2.9.8",
+    "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
