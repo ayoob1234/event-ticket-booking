@@ -16,6 +16,7 @@ import EditEvent from "./pages/EditEvent";
 import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
 import Seats from "./pages/Seats";
+import VerifyEmail from "./pages/VerifyEmail";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
@@ -519,6 +520,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/events" element={<Events />} />
         <Route path="/events/:id" element={<EventDetails />} />
