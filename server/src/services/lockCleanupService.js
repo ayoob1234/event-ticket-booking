@@ -1,13 +1,21 @@
 
 const pool = require("../config/db");
 
+let cleanupRunning = false;
+let cleanupInterval = null;
+
 const releaseExpiredLocks = async (io) => {
-  const client = await pool.connect();
+  // Prevent overlapping cleanup runs
+  if (cleanupRunning) return;
+
+  cleanupRunning = true;
+  let client;
 
   try {
+    client = await pool.connect();
+
     await client.query("BEGIN");
 
-    // 1. Release all expired seat locks
     const result = await client.query(`
       UPDATE seats
       SET
@@ -20,7 +28,6 @@ const releaseExpiredLocks = async (io) => {
       RETURNING id, event_id
     `);
 
-    // 2. Mark expired pending bookings as EXPIRED
     const bookingResult = await client.query(`
       UPDATE bookings
       SET status = 'EXPIRED'
@@ -32,7 +39,6 @@ const releaseExpiredLocks = async (io) => {
 
     await client.query("COMMIT");
 
-    // 3. Group released seats by event
     const seatsByEvent = {};
 
     for (const seat of result.rows) {
@@ -45,13 +51,12 @@ const releaseExpiredLocks = async (io) => {
       seatsByEvent[eventId].push(seat.id);
     }
 
-    // 4. Notify connected users through Socket.io
     for (const [eventId, seatIds] of Object.entries(seatsByEvent)) {
       if (io) {
         io.to(`event:${eventId}`).emit("seat_update", {
           eventId,
           seatIds,
-          status: "AVAILABLE"
+          status: "AVAILABLE",
         });
       }
 
@@ -66,23 +71,31 @@ const releaseExpiredLocks = async (io) => {
       );
     }
   } catch (error) {
-    await client.query("ROLLBACK").catch(() => {});
+    if (client) {
+      await client.query("ROLLBACK").catch(() => {});
+    }
+
     console.error("Expired lock cleanup error:", error.message);
   } finally {
-    client.release();
+    if (client) {
+      client.release();
+    }
+
+    cleanupRunning = false;
   }
 };
 
 const startLockCleanup = (io) => {
-  // Run once when the server starts
-  releaseExpiredLocks(io);
+  if (cleanupInterval) return;
 
-  // Repeat every minute
-  setInterval(() => {
-    releaseExpiredLocks(io);
+  // Run immediately, then every minute
+  void releaseExpiredLocks(io);
+
+  cleanupInterval = setInterval(() => {
+    void releaseExpiredLocks(io);
   }, 60 * 1000);
 };
 
 module.exports = {
-  startLockCleanup
+  startLockCleanup,
 };

@@ -4,6 +4,7 @@ const { Server } = require("socket.io");
 
 const app = require("./app");
 const pool = require("./config/db");
+const { verifyEmailConnection } = require("./services/emailService");
 const {
   startLockCleanup
 } = require("./services/lockCleanupService");
@@ -34,53 +35,28 @@ app.set("io", io);
   Socket.io connection handling
 */
 io.on("connection", (socket) => {
-  console.log(
-    "Socket connected:",
-    socket.id
-  );
+  console.log("Socket connected:", socket.id);
 
-  /*
-    User joins a specific event room
-  */
   socket.on("join_event", (eventId) => {
-    if (!eventId) {
-      return;
-    }
+    if (!eventId) return;
 
     const roomName = `event:${eventId}`;
-
     socket.join(roomName);
 
-    console.log(
-      `Socket ${socket.id} joined ${roomName}`
-    );
+    console.log(`Socket ${socket.id} joined ${roomName}`);
   });
 
-  /*
-    User leaves a specific event room
-  */
   socket.on("leave_event", (eventId) => {
-    if (!eventId) {
-      return;
-    }
+    if (!eventId) return;
 
     const roomName = `event:${eventId}`;
-
     socket.leave(roomName);
 
-    console.log(
-      `Socket ${socket.id} left ${roomName}`
-    );
+    console.log(`Socket ${socket.id} left ${roomName}`);
   });
 
-  /*
-    User disconnects
-  */
   socket.on("disconnect", () => {
-    console.log(
-      "Socket disconnected:",
-      socket.id
-    );
+    console.log("Socket disconnected:", socket.id);
   });
 });
 
@@ -90,30 +66,18 @@ io.on("connection", (socket) => {
 const startServer = async () => {
   try {
     await pool.query("SELECT NOW()");
+    console.log("PostgreSQL connected successfully");
 
-    console.log(
-      "PostgreSQL connected successfully"
-    );
+    startLockCleanup(io);
 
-    /*
-      Start background expired-seat cleanup
-    */
-   startLockCleanup(io);
-
-    /*
-      Start HTTP + Socket.io server
-    */
     httpServer.listen(PORT, () => {
-      console.log(
-        `Server running on port ${PORT}`
-      );
-    });
+      console.log(`Server running on port ${PORT}`);
 
+      // Verify Gmail SMTP connection after server starts
+      verifyEmailConnection();
+    });
   } catch (error) {
-    console.error(
-      "Database connection failed:",
-      error.message
-    );
+    console.error("Database connection failed:", error.message);
   }
 };
 

@@ -1,11 +1,9 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import api from "../services/api";
 
 function Register() {
-  const navigate = useNavigate();
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,34 +11,38 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   const handleRegister = async (event) => {
     event.preventDefault();
 
     setError("");
     setSuccess("");
+    setRegisteredEmail("");
     setLoading(true);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+
       const response = await api.post("/auth/register", {
         name: name.trim(),
-        email: email.trim(),
+        email: normalizedEmail,
         password,
       });
 
-      console.log("Register response:", response.data);
+      setRegisteredEmail(normalizedEmail);
+      setSuccess(
+        response.data?.message ||
+          "Registration successful. Please check your email to verify your account."
+      );
 
-      setSuccess("Account created successfully! Redirecting to login...");
       setName("");
       setEmail("");
       setPassword("");
-
-      // Redirect after the success message is visible.
-      window.setTimeout(() => {
-        navigate("/login", { replace: true });
-      }, 1500);
+      setShowPassword(false);
     } catch (err) {
       console.error("Registration error:", err);
+
       setError(
         err.response?.data?.message ||
           "Registration failed. Please try again."
@@ -53,13 +55,11 @@ function Register() {
   const inputClass =
     "mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100";
 
-  const labelClass =
-    "block text-sm font-semibold text-slate-700";
+  const labelClass = "block text-sm font-semibold text-slate-700";
 
   return (
     <div className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-slate-50 px-4 py-10">
       <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl md:grid-cols-2">
-        {/* Left welcome panel */}
         <div className="hidden flex-col justify-between bg-[#14213d] p-10 text-white md:flex">
           <div>
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-2xl">
@@ -87,7 +87,6 @@ function Register() {
           </div>
         </div>
 
-        {/* Registration form */}
         <div className="p-6 sm:p-10 lg:p-12">
           <div className="mb-8">
             <p className="text-sm font-semibold text-blue-600">
@@ -99,7 +98,7 @@ function Register() {
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              Fill in your details to get started with Evently.
+              Verify your email address before signing in to Evently.
             </p>
           </div>
 
@@ -115,9 +114,23 @@ function Register() {
           {success && (
             <div
               role="status"
-              className="mb-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800"
+              className="mb-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm leading-6 text-green-800"
             >
-              ✓ {success}
+              <p className="font-semibold">✓ Check your email</p>
+              <p className="mt-1">{success}</p>
+              {registeredEmail && (
+                <p className="mt-2 font-semibold">{registeredEmail}</p>
+              )}
+              <p className="mt-2">
+                Open the verification link in your email. The link expires
+                after 30 minutes. After verifying, return to the login page.
+              </p>
+              <Link
+                to="/login"
+                className="mt-3 inline-block font-semibold text-blue-700 underline"
+              >
+                Go to Login
+              </Link>
             </div>
           )}
 
@@ -126,7 +139,6 @@ function Register() {
               <label htmlFor="name" className={labelClass}>
                 Full name
               </label>
-
               <input
                 id="name"
                 type="text"
@@ -145,7 +157,6 @@ function Register() {
               <label htmlFor="email" className={labelClass}>
                 Email address
               </label>
-
               <input
                 id="email"
                 type="email"
@@ -173,16 +184,14 @@ function Register() {
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Create a password"
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-20 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                  minLength={6}
+                  minLength={8}
                   maxLength={128}
                   required
                 />
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowPassword((previous) => !previous)
-                  }
+                  onClick={() => setShowPassword((previous) => !previous)}
                   className="absolute inset-y-0 right-3 text-sm font-semibold text-slate-500 hover:text-blue-600"
                 >
                   {showPassword ? "Hide" : "Show"}
@@ -190,7 +199,7 @@ function Register() {
               </div>
 
               <p className="mt-2 text-xs text-slate-500">
-                Use at least 6 characters.
+                Use at least 8 characters.
               </p>
             </div>
 
@@ -214,8 +223,8 @@ function Register() {
           </p>
 
           <p className="mt-6 text-center text-xs leading-5 text-slate-400">
-            New accounts should receive the default USER role.
-            Administrator access must be granted securely.
+            New accounts receive the USER role. Administrator access
+            must be granted securely.
           </p>
         </div>
       </div>
