@@ -1,72 +1,50 @@
 
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_APP_PASSWORD,
+  },
+});
+
 async function sendEmail({ to, subject, text, html, attachments }) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM;
-
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY is missing from environment variables");
-  }
-
-  if (!from) {
-    throw new Error("EMAIL_FROM is missing from environment variables");
-  }
-
-  const email = {
-    from,
-    to: Array.isArray(to) ? to : [to],
-    subject,
-    ...(text ? { text } : {}),
-    ...(html ? { html } : {}),
-  };
-
-  if (attachments?.length) {
-    email.attachments = attachments.map((file) => {
-      if (file.content) {
-        return {
-          filename: file.filename,
-          content: Buffer.isBuffer(file.content)
-            ? file.content.toString("base64")
-            : file.content,
-        };
-      }
-
-      throw new Error(
-        "Resend attachments need file content or base64 data"
-      );
-    });
-  }
-
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(email),
-  });
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    console.error("Resend API error:", response.status, result);
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
     throw new Error(
-      result.message || `Resend request failed: ${response.status}`
+      "Gmail SMTP credentials are missing. Check EMAIL_USER and EMAIL_APP_PASSWORD."
     );
   }
 
-  console.log("Email accepted by Resend:", result.id);
-  return result;
+  return transporter.sendMail({
+    from: `"${process.env.EMAIL_FROM_NAME || "Evently"}" <${process.env.EMAIL_USER}>`,
+    to,
+    subject,
+    ...(text ? { text } : {}),
+    ...(html ? { html } : {}),
+    ...(attachments?.length ? { attachments } : {}),
+  });
 }
 
 async function verifyEmailConnection() {
-  if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
     console.error(
-      "Resend email configuration missing: check RESEND_API_KEY and EMAIL_FROM"
+      "Gmail SMTP configuration missing. Check EMAIL_USER and EMAIL_APP_PASSWORD."
     );
     return;
   }
 
-  console.log("Resend email configuration found");
+  try {
+    await transporter.verify();
+    console.log("Gmail SMTP connected successfully");
+  } catch (error) {
+    console.error("Gmail SMTP connection failed:", error.message);
+  }
 }
 
-module.exports = { sendEmail, verifyEmailConnection };
+module.exports = {
+  sendEmail,
+  verifyEmailConnection,
+};
