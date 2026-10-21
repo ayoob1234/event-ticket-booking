@@ -6,8 +6,70 @@ const pool = require("../config/db");
 const { sendEmail } = require("../services/emailService");
 
 // REGISTER USER
+
 const registerUser = async (req, res) => {
-  
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name?.trim() || !email?.trim() || !password) {
+      return res.status(400).json({
+        message: "Name, email and password are required",
+      });
+    }
+
+    if (typeof password !== "string" || password.length < 8) {
+      return res.status(400).json({
+        message: "Password must be at least 8 characters long",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingUser = await pool.query(
+      "SELECT id FROM users WHERE email = $1",
+      [normalizedEmail]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(409).json({
+        message: "User with this email already exists",
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(verificationToken)
+      .digest("hex");
+
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+    const result = await pool.query(
+      `INSERT INTO users
+        (name, email, password_hash, email_verified,
+         verification_token_hash, verification_token_expires_at)
+       VALUES ($1, $2, $3, FALSE, $4, $5)
+       RETURNING id, name, email`,
+      [name.trim(), normalizedEmail, passwordHash, tokenHash, expiresAt]
+    );
+
+    const user = result.rows[0];
+
+    if (!process.env.FRONTEND_URL) {
+      console.error("FRONTEND_URL is not configured");
+
+      return res.status(201).json({
+        message:
+          "Account created but verification email could not be sent. Please contact support.",
+        user,
+      });
+    }
+
+    const verificationLink =
+      `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+
     try {
       await sendEmail({
         to: normalizedEmail,
@@ -30,17 +92,30 @@ const registerUser = async (req, res) => {
       return res.status(503).json({
         message:
           "Your account was created but the verification email could not be sent. Please try again later.",
-        user: result.rows[0],
+        user,
       });
     }
 
     return res.status(201).json({
       message:
-        "Registration started. Check your email and verify your account within 30 minutes.",
-      user: result.rows[0],
+        "Registration successful. Check your email and verify your account within 30 minutes.",
+      user,
     });
+  } catch (error) {
+    console.error("Registration error:", error.message);
 
+    if (error.code === "23505") {
+      return res.status(409).json({
+        message: "User with this email already exists",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Registration failed. Please try again.",
+    });
+  }
 };
+
 
 // LOGIN USER
 const loginUser = async (req, res) => {
