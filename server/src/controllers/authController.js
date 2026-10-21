@@ -7,7 +7,10 @@ const { sendEmail } = require("../services/emailService");
 
 // REGISTER USER
 
+
 const registerUser = async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { name, email, password } = req.body;
 
@@ -25,7 +28,7 @@ const registerUser = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    const existingUser = await pool.query(
+    const existingUser = await client.query(
       "SELECT id FROM users WHERE email = $1",
       [normalizedEmail]
     );
@@ -38,7 +41,16 @@ const registerUser = async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
+    if (!process.env.FRONTEND_URL) {
+      console.error("FRONTEND_URL is not configured");
+
+      return res.status(500).json({
+        message: "Registration could not be completed. Please try again.",
+      });
+    }
+
     const verificationToken = crypto.randomBytes(32).toString("hex");
+
     const tokenHash = crypto
       .createHash("sha256")
       .update(verificationToken)
@@ -46,30 +58,10 @@ const registerUser = async (req, res) => {
 
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
 
-    const result = await pool.query(
-      `INSERT INTO users
-        (name, email, password_hash, email_verified,
-         verification_token_hash, verification_token_expires_at)
-       VALUES ($1, $2, $3, FALSE, $4, $5)
-       RETURNING id, name, email`,
-      [name.trim(), normalizedEmail, passwordHash, tokenHash, expiresAt]
-    );
-
-    const user = result.rows[0];
-
-    if (!process.env.FRONTEND_URL) {
-      console.error("FRONTEND_URL is not configured");
-
-      return res.status(201).json({
-        message:
-          "Account created but verification email could not be sent. Please contact support.",
-        user,
-      });
-    }
-
     const verificationLink =
       `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
 
+    // Send email first. No user is inserted into users table here.
     try {
       await sendEmail({
         to: normalizedEmail,
@@ -81,7 +73,7 @@ const registerUser = async (req, res) => {
         html: `
           <h2>Welcome to Evently!</h2>
           <p>Hi ${name.trim()},</p>
-          <p>Please verify your email address to activate your account.</p>
+          <p>Please verify your email address to create your account.</p>
           <p><a href="${verificationLink}">Verify my email</a></p>
           <p>This link expires in 30 minutes.</p>
         `,
@@ -90,31 +82,70 @@ const registerUser = async (req, res) => {
       console.error("Verification email failed:", emailError.message);
 
       return res.status(503).json({
-        message:
-          "Your account was created but the verification email could not be sent. Please try again later.",
-        user,
+        message: "Email couldn't be sent. Please try again later.",
       });
     }
 
-    return res.status(201).json({
+    // Save pending registration only after the email provider accepts the email.
+    await client.query("BEGIN");
+
+    // Recheck for a duplicate to handle simultaneous registration requests.
+    const duplicateCheck = await client.query(
+      "SELECT id FROM users WHERE email = $1",
+      [normalizedEmail]
+    );
+
+    if (duplicateCheck.rows.length > 0) {
+      await client.query("ROLLBACK");
+
+      return res.status(409).json({
+        message: "User with this email already exists",
+      });
+    }
+
+    await client.query(
+      `DELETE FROM pending_registrations
+       WHERE email = $1 OR expires_at <= CURRENT_TIMESTAMP`,
+      [normalizedEmail]
+    );
+
+    await client.query(
+      `INSERT INTO pending_registrations
+         (name, email, password_hash, verification_token_hash, expires_at)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [name.trim(), normalizedEmail, passwordHash, tokenHash, expiresAt]
+    );
+
+    await client.query("COMMIT");
+
+    return res.status(200).json({
       message:
-        "Registration successful. Check your email and verify your account within 30 minutes.",
-      user,
+        "Verification email sent. Verify your email within 30 minutes to create your account.",
     });
   } catch (error) {
+    try {
+      await client.query("ROLLBACK");
+    } catch (rollbackError) {
+      console.error("Registration rollback failed:", rollbackError.message);
+    }
+
     console.error("Registration error:", error.message);
 
     if (error.code === "23505") {
       return res.status(409).json({
-        message: "User with this email already exists",
+        message:
+          "A registration with this email is already pending or the account already exists.",
       });
     }
 
     return res.status(500).json({
       message: "Registration failed. Please try again.",
     });
+  } finally {
+    client.release();
   }
 };
+
 
 
 // LOGIN USER
@@ -194,25 +225,16 @@ const loginUser = async (req, res) => {
 
 // VERIFY EMAIL
 
+
 const verifyEmail = async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { token } = req.query;
 
-    // Debug safely: never print the actual token
-    console.log("Token received:", Boolean(token));
-    console.log("Token type:", typeof token);
-    console.log(
-      "Token length:",
-      typeof token === "string" ? token.length : 0
-    );
-
-    if (
-      !token ||
-      typeof token !== "string" ||
-      !/^[a-f0-9]{64}$/i.test(token)
-    ) {
+    if (!token || typeof token !== "string" || !/^[a-f0-9]{64}$/i.test(token)) {
       return res.status(400).json({
-        message: "Verification token is invalid or missing",
+        message: "Invalid or missing verification token",
       });
     }
 
@@ -221,72 +243,90 @@ const verifyEmail = async (req, res) => {
       .update(token)
       .digest("hex");
 
-    const result = await pool.query(
-      `SELECT id, name, email
-       FROM users
+    await client.query("BEGIN");
+
+    const pendingResult = await client.query(
+      `SELECT id, name, email, password_hash
+       FROM pending_registrations
        WHERE verification_token_hash = $1
-         AND verification_token_expires_at > CURRENT_TIMESTAMP
-         AND email_verified = FALSE`,
+         AND expires_at > CURRENT_TIMESTAMP
+       FOR UPDATE`,
       [tokenHash]
     );
 
-    if (result.rows.length === 0) {
+    if (pendingResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+
       return res.status(400).json({
-        message: "Verification link is invalid, expired, or already used",
+        message: "Verification link is invalid or expired. Please register again.",
       });
     }
 
-    const user = result.rows[0];
+    const pending = pendingResult.rows[0];
 
-    const updateResult = await pool.query(
-      `UPDATE users
-       SET email_verified = TRUE,
-           verification_token_hash = NULL,
-           verification_token_expires_at = NULL,
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = $1
-         AND email_verified = FALSE
-         AND verification_token_hash = $2
-         AND verification_token_expires_at > CURRENT_TIMESTAMP
-       RETURNING id`,
-      [user.id, tokenHash]
+    // Protect against an account created with the same email in the meantime.
+    const existingUser = await client.query(
+      "SELECT id FROM users WHERE email = $1",
+      [pending.email]
     );
 
-    if (updateResult.rows.length === 0) {
-      return res.status(400).json({
-        message: "Verification link is invalid, expired, or already used",
+    if (existingUser.rows.length > 0) {
+      await client.query(
+        "DELETE FROM pending_registrations WHERE id = $1",
+        [pending.id]
+      );
+
+      await client.query("COMMIT");
+
+      return res.status(409).json({
+        message: "An account with this email already exists.",
       });
     }
 
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: "Welcome to Evently!",
-        text:
-          `Hi ${user.name},\n\n` +
-          "Your email has been verified successfully. You can now log in to Evently.\n\n" +
-          "Evently",
-        html: `
-          <h2>Welcome to Evently, ${user.name}!</h2>
-          <p>Your email has been verified successfully.</p>
-          <p>Your account is now active. You can log in to Evently.</p>
-        `,
-      });
-    } catch (emailError) {
-      console.error("Welcome email error:", emailError.message);
-    }
+    // Create the actual account only after successful verification.
+    const userResult = await client.query(
+      `INSERT INTO users
+         (name, email, password_hash, email_verified)
+       VALUES ($1, $2, $3, TRUE)
+       RETURNING id, name, email, role, email_verified, created_at`,
+      [pending.name, pending.email, pending.password_hash]
+    );
+
+    // Delete the temporary registration so the token cannot be reused.
+    await client.query(
+      "DELETE FROM pending_registrations WHERE id = $1",
+      [pending.id]
+    );
+
+    await client.query("COMMIT");
 
     return res.status(200).json({
       message: "Email verified successfully. You can now log in.",
+      user: userResult.rows[0],
     });
   } catch (error) {
-    console.error("Email verification error:", error.message);
+    try {
+      await client.query("ROLLBACK");
+    } catch (rollbackError) {
+      console.error("Verification rollback failed:", rollbackError.message);
+    }
+
+    console.error("Email verification failed:", error.message);
+
+    if (error.code === "23505") {
+      return res.status(409).json({
+        message: "An account with this email already exists.",
+      });
+    }
 
     return res.status(500).json({
       message: "Email verification failed. Please try again.",
     });
+  } finally {
+    client.release();
   }
 };
+
 
 //resendVerificationEmail
 const resendVerificationEmail = async (req, res) => {

@@ -1,16 +1,13 @@
+
 const express = require("express");
 
 const {
   registerUser,
   loginUser,
   verifyEmail,
-  resendVerificationEmail,
-  forgotPassword,
-  resetPassword,
   getProfile,
   updateProfile,
 } = require("../controllers/authController");
-
 
 const authMiddleware = require("../middleware/authMiddleware");
 const roleMiddleware = require("../middleware/roleMiddleware");
@@ -19,10 +16,7 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.get("/verify-email", verifyEmail);
-router.post("/resend-verification", resendVerificationEmail);
 router.post("/login", loginUser);
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password", resetPassword);
 
 // View profile
 router.get("/profile", authMiddleware, getProfile);
