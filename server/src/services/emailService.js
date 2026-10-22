@@ -1,85 +1,51 @@
-const nodemailer = require("nodemailer");
-const { Resend } = require("resend");
 
-const isProduction = process.env.NODE_ENV === "production";
+async function sendEmail({ to, subject, text, html }) {
+  const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
+  const secret = process.env.GOOGLE_SCRIPT_SECRET;
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_APP_PASSWORD,
-  },
-});
+  if (!scriptUrl || !secret) {
+    throw new Error("Google Apps Script email configuration is missing");
+  }
 
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
-
-async function sendEmail({ to, subject, text, html, attachments }) {
-  if (isProduction) {
-    if (!resend) {
-      throw new Error("RESEND_API_KEY is missing");
-    }
-
-    const fromEmail = process.env.RESEND_FROM_EMAIL;
-
-    if (!fromEmail) {
-      throw new Error("RESEND_FROM_EMAIL is missing");
-    }
-
-    const result = await resend.emails.send({
-      from: fromEmail,
-      to: [to],
+  const response = await fetch(scriptUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      secret,
+      to,
       subject,
-      ...(text ? { text } : {}),
-      ...(html ? { html } : {}),
-      ...(attachments?.length ? { attachments } : {}),
-    });
-
-    if (result.error) {
-      throw new Error(result.error.message);
-    }
-
-    return result.data;
-  }
-
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
-    throw new Error("Gmail SMTP credentials are missing");
-  }
-
-  return transporter.sendMail({
-    from: `"${process.env.EMAIL_FROM_NAME || "Evently"}" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    ...(text ? { text } : {}),
-    ...(html ? { html } : {}),
-    ...(attachments?.length ? { attachments } : {}),
+      text: text || "",
+      html: html || "",
+    }),
+    redirect: "follow",
   });
+
+  const responseText = await response.text();
+
+  let result;
+
+  try {
+    result = JSON.parse(responseText);
+  } catch {
+    throw new Error("Google Apps Script returned an invalid response");
+  }
+
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || "Email could not be sent");
+  }
+
+  return result;
 }
 
 async function verifyEmailConnection() {
-  if (isProduction) {
-    console.log(
-      resend
-        ? "Resend API configured"
-        : "RESEND_API_KEY is missing"
-    );
+  if (!process.env.GOOGLE_SCRIPT_URL || !process.env.GOOGLE_SCRIPT_SECRET) {
+    console.error("Google Apps Script email configuration missing");
     return;
   }
 
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
-    console.error("Gmail SMTP configuration missing");
-    return;
-  }
-
-  try {
-    await transporter.verify();
-    console.log("Gmail SMTP connected successfully");
-  } catch (error) {
-    console.error("Gmail SMTP connection failed:", error.message);
-  }
+  console.log("Google Apps Script email configuration detected");
 }
 
 module.exports = {
