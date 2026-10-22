@@ -107,13 +107,56 @@ function Events() {
     }).format(amount);
   };
 
-  const getPoster = (event) =>
+  
+const getPoster = (event) => {
+  // Agar event ki apni image hai, toh use hi dikhayein.
+  const existingPoster =
     event.poster_url ||
     event.poster ||
     event.image_url ||
     event.image ||
-    event.banner_url ||
-    "";
+    event.banner_url;
+
+  if (existingPoster) return existingPoster;
+
+  // Event ke naam, description aur category se image choose karein.
+  const details = [
+    event.title,
+    event.description,
+    event.category,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (/music|concert|singer|band|dj/.test(details)) {
+    return "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=900&q=80";
+  }
+
+  if (/sport|cricket|football|kabaddi|match|tournament/.test(details)) {
+    return "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=900&q=80";
+  }
+
+  if (/tech|technology|ai|coding|developer|software/.test(details)) {
+    return "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80";
+  }
+
+  if (/business|conference|meeting|startup|seminar/.test(details)) {
+    return "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=900&q=80";
+  }
+
+  if (/food|cooking|restaurant|dinner/.test(details)) {
+    return "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&q=80";
+  }
+
+  if (/art|painting|design|exhibition/.test(details)) {
+    return "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=900&q=80";
+  }
+
+  // Baaki sabhi events ke liye default event photo.
+  return "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=900&q=80";
+};
+
 
   return (
     <div className="min-h-screen bg-slate-50 text-[#14213d]">
