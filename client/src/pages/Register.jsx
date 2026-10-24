@@ -53,20 +53,22 @@ function Register() {
   };
 
   const inputClass =
-    "mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100";
+    "mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-950";
 
-  const labelClass = "block text-sm font-semibold text-slate-700";
+  const labelClass =
+    "block text-sm font-semibold text-slate-700 dark:text-slate-300";
 
   return (
-    <div className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-slate-50 px-4 py-10">
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl md:grid-cols-2">
-        <div className="hidden flex-col justify-between bg-[#14213d] p-10 text-white md:flex">
+    <main className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-slate-50 px-4 py-10 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+      <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 md:grid-cols-2">
+        {/* Welcome panel */}
+        <div className="hidden flex-col justify-between bg-slate-900 p-10 text-white dark:bg-slate-950 md:flex">
           <div>
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-2xl">
               ✦
             </div>
 
-            <p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-blue-200">
+            <p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">
               Join Evently
             </p>
 
@@ -87,17 +89,18 @@ function Register() {
           </div>
         </div>
 
+        {/* Registration form */}
         <div className="p-6 sm:p-10 lg:p-12">
           <div className="mb-8">
-            <p className="text-sm font-semibold text-blue-600">
+            <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
               GET STARTED
             </p>
 
-            <h2 className="mt-2 text-3xl font-bold text-slate-900">
+            <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
               Create your account
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-slate-500">
+            <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
               Verify your email address before signing in to Evently.
             </p>
           </div>
@@ -105,7 +108,7 @@ function Register() {
           {error && (
             <div
               role="alert"
-              className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+              className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/50 dark:text-red-300"
             >
               {error}
             </div>
@@ -114,20 +117,26 @@ function Register() {
           {success && (
             <div
               role="status"
-              className="mb-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm leading-6 text-green-800"
+              className="mb-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm leading-6 text-green-800 dark:border-green-900 dark:bg-green-950/50 dark:text-green-300"
             >
               <p className="font-semibold">✓ Check your email</p>
+
               <p className="mt-1">{success}</p>
+
               {registeredEmail && (
-                <p className="mt-2 font-semibold">{registeredEmail}</p>
+                <p className="mt-2 break-all font-semibold">
+                  {registeredEmail}
+                </p>
               )}
+
               <p className="mt-2">
                 Open the verification link in your email. The link expires
                 after 30 minutes. After verifying, return to the login page.
               </p>
+
               <Link
                 to="/login"
-                className="mt-3 inline-block font-semibold text-blue-700 underline"
+                className="mt-3 inline-block font-semibold text-blue-700 underline dark:text-blue-400"
               >
                 Go to Login
               </Link>
@@ -139,6 +148,7 @@ function Register() {
               <label htmlFor="name" className={labelClass}>
                 Full name
               </label>
+
               <input
                 id="name"
                 type="text"
@@ -157,6 +167,7 @@ function Register() {
               <label htmlFor="email" className={labelClass}>
                 Email address
               </label>
+
               <input
                 id="email"
                 type="email"
@@ -183,7 +194,7 @@ function Register() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Create a password"
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-20 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className={`${inputClass} mt-0 pr-20`}
                   minLength={8}
                   maxLength={128}
                   required
@@ -191,14 +202,16 @@ function Register() {
 
                 <button
                   type="button"
-                  onClick={() => setShowPassword((previous) => !previous)}
-                  className="absolute inset-y-0 right-3 text-sm font-semibold text-slate-500 hover:text-blue-600"
+                  onClick={() =>
+                    setShowPassword((previous) => !previous)
+                  }
+                  className="absolute inset-y-0 right-3 text-sm font-semibold text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
 
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                 Use at least 8 characters.
               </p>
             </div>
@@ -206,29 +219,29 @@ function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center rounded-xl bg-blue-600 px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center rounded-xl bg-blue-600 px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-offset-slate-900"
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
-          <p className="mt-7 text-center text-sm text-slate-600">
+          <p className="mt-7 text-center text-sm text-slate-600 dark:text-slate-400">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="font-semibold text-blue-600 hover:text-blue-700"
+              className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
             >
               Sign in
             </Link>
           </p>
 
-          <p className="mt-6 text-center text-xs leading-5 text-slate-400">
+          <p className="mt-6 text-center text-xs leading-5 text-slate-400 dark:text-slate-500">
             New accounts receive the USER role. Administrator access
             must be granted securely.
           </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

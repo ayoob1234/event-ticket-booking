@@ -32,6 +32,12 @@ function Seats() {
   const [paying, setPaying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
+  const primaryText = "text-[var(--color-text)]";
+  const mutedText = "text-[var(--color-text-secondary)]";
+  const surface = "bg-[var(--color-surface)]";
+  const secondarySurface = "bg-[var(--color-surface-secondary)]";
+  const borderColor = "border-[var(--color-border)]";
+
   useEffect(() => {
     let active = true;
 
@@ -49,7 +55,10 @@ function Seats() {
         }
       } catch (err) {
         console.error("Fetch seats error:", err);
-        if (active) setError("Failed to load seats. Please try again.");
+
+        if (active) {
+          setError("Failed to load seats. Please try again.");
+        }
       } finally {
         if (active) setLoading(false);
       }
@@ -80,6 +89,7 @@ function Seats() {
 
       try {
         const response = await api.get(`/events/${id}/seats`);
+
         setSeats(
           Array.isArray(response.data?.seats)
             ? response.data.seats
@@ -126,6 +136,7 @@ function Seats() {
   const getStatus = (seat) => {
     if (lockedIds.has(String(seat.id))) return "YOUR LOCK";
     if (selectedIds.has(String(seat.id))) return "SELECTED";
+
     return String(seat.status || "AVAILABLE").toUpperCase();
   };
 
@@ -134,30 +145,33 @@ function Seats() {
     const category = String(seat.category || "").toUpperCase();
 
     if (status === "SELECTED") {
-      return "border-green-600 bg-green-600 text-white shadow-md shadow-green-100";
+      return "border-green-500 bg-green-600 text-white shadow-md shadow-green-900/20";
     }
 
     if (status === "YOUR LOCK") {
-      return "border-amber-500 bg-amber-100 text-amber-900";
+      return "border-amber-500 bg-amber-500/15 text-amber-700 dark:text-amber-300";
     }
 
     if (status === "BOOKED") {
-      return "cursor-not-allowed border-slate-300 bg-slate-200 text-slate-400";
+      return "cursor-not-allowed border-[var(--color-border)] bg-[var(--color-surface-secondary)] text-[var(--color-text-secondary)] opacity-70";
     }
 
     if (status === "LOCKED") {
-      return "cursor-not-allowed border-orange-200 bg-orange-100 text-orange-700";
+      return "cursor-not-allowed border-orange-400/60 bg-orange-500/10 text-orange-700 dark:text-orange-300";
     }
 
     if (category.includes("VIP")) {
-      return "border-purple-300 bg-purple-50 text-purple-800 hover:border-purple-500 hover:bg-purple-100";
+      return "border-purple-400/70 bg-purple-500/10 text-purple-700 hover:border-purple-500 hover:bg-purple-500/20 dark:text-purple-300";
     }
 
-    return "border-slate-300 bg-white text-[#14213d] hover:border-green-500 hover:bg-green-50";
+    return "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] hover:border-green-500 hover:bg-green-500/10";
   };
 
   const handleSeatClick = (seat) => {
-    if (seat.status !== "AVAILABLE" || lockedIds.has(String(seat.id))) {
+    if (
+      String(seat.status || "").toUpperCase() !== "AVAILABLE" ||
+      lockedIds.has(String(seat.id))
+    ) {
       return;
     }
 
@@ -198,14 +212,15 @@ function Seats() {
       const seatsResponse = await api.get(`/events/${id}/seats`);
       setSeats(seatsResponse.data?.seats || []);
 
-      // The backend remains the source of truth for seat status.
       console.log(
         response.data?.message || "Seats locked successfully"
       );
     } catch (err) {
       console.error("Lock seats error:", err);
+
       setError(
-        err.response?.data?.message || "Unable to lock those seats. Please refresh and try again."
+        err.response?.data?.message ||
+          "Unable to lock those seats. Please refresh and try again."
       );
 
       try {
@@ -243,6 +258,7 @@ function Seats() {
       setBookingId(newBookingId);
     } catch (err) {
       console.error("Create booking error:", err);
+
       setError(
         err.response?.data?.message ||
           err.message ||
@@ -281,7 +297,9 @@ function Seats() {
       const scriptLoaded = await loadRazorpayScript();
 
       if (!scriptLoaded) {
-        throw new Error("Unable to load Razorpay. Check your internet connection.");
+        throw new Error(
+          "Unable to load Razorpay. Check your internet connection."
+        );
       }
 
       const orderResponse = await api.post("/payments/create-order", {
@@ -292,7 +310,9 @@ function Seats() {
       const razorpayOrder = orderData?.order;
 
       if (!orderData?.key_id || !razorpayOrder?.id) {
-        throw new Error("Razorpay order details are missing from the server.");
+        throw new Error(
+          "Razorpay order details are missing from the server."
+        );
       }
 
       const options = {
@@ -314,10 +334,15 @@ function Seats() {
               razorpay_signature: razorpayResponse.razorpay_signature,
             });
 
-            console.log("Payment verification response:", verifyResponse.data);
+            console.log(
+              "Payment verification response:",
+              verifyResponse.data
+            );
+
             setPaymentSuccess(true);
           } catch (err) {
             console.error("Payment verification error:", err);
+
             setError(
               err.response?.data?.message ||
                 "Payment verification failed. Check your booking status before retrying."
@@ -340,9 +365,11 @@ function Seats() {
 
       checkout.on("payment.failed", (response) => {
         console.error("Razorpay payment failed:", response.error);
+
         setError(
           response.error?.description || "Payment failed. Please try again."
         );
+
         setPaying(false);
       });
 
@@ -350,11 +377,13 @@ function Seats() {
       setPaying(false);
     } catch (err) {
       console.error("Payment error:", err);
+
       setError(
         err.response?.data?.message ||
           err.message ||
           "Unable to start payment."
       );
+
       setPaying(false);
     }
   };
@@ -365,7 +394,7 @@ function Seats() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6">
+      <main className="min-h-screen bg-[var(--color-page)] px-4 py-8 sm:px-6">
         <div className="mx-auto max-w-5xl">
           <div className="skeleton mb-6 h-8 w-48" />
           <div className="skeleton mb-8 h-20 w-full rounded-2xl" />
@@ -376,24 +405,26 @@ function Seats() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 pb-36 text-[#14213d] sm:pb-12">
+    <main className="min-h-screen bg-[var(--color-page)] pb-36 text-[var(--color-text)] transition-colors duration-300 sm:pb-12">
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
         <Link
           to={`/events/${id}`}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-[#14213d]"
+          className={`inline-flex items-center gap-2 text-sm font-semibold ${mutedText} transition hover:opacity-75`}
         >
           <span aria-hidden="true">←</span>
           Back to event
         </Link>
 
         <div className="mt-5">
-          <p className="text-sm font-bold uppercase tracking-[0.16em] text-green-700">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[var(--color-accent)]">
             Book your experience
           </p>
+
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
             Select your seats
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+
+          <p className={`mt-3 max-w-2xl text-sm leading-6 ${mutedText} sm:text-base`}>
             Choose your preferred seats below. Available seats can be selected;
             seat availability is updated from the server.
           </p>
@@ -402,13 +433,14 @@ function Seats() {
         {error && (
           <div
             role="alert"
-            className="mt-6 flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+            className="mt-6 flex items-start justify-between gap-4 rounded-xl border border-red-400/40 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
           >
             <p>{error}</p>
+
             <button
               type="button"
               onClick={() => setError("")}
-              className="shrink-0 font-bold"
+              className="shrink-0 text-lg font-bold"
               aria-label="Dismiss error"
             >
               ×
@@ -416,34 +448,40 @@ function Seats() {
           </div>
         )}
 
-        <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-8">
+        <section
+          className={`mt-8 rounded-3xl border ${borderColor} ${surface} p-4 shadow-sm sm:p-8`}
+        >
           <div className="mx-auto max-w-xl">
-            <div className="rounded-t-[50%] border-t-4 border-slate-300 pt-3 text-center">
-              <p className="text-xs font-bold uppercase tracking-[0.35em] text-slate-400">
+            <div className="rounded-t-[50%] border-t-4 border-[var(--color-border)] pt-3 text-center">
+              <p className={`text-xs font-bold uppercase tracking-[0.35em] ${mutedText}`}>
                 Stage / Screen
               </p>
             </div>
           </div>
 
-          <div className="mt-8 flex flex-wrap justify-center gap-x-5 gap-y-3 text-xs text-slate-600 sm:gap-x-7 sm:text-sm">
+          <div className={`mt-8 flex flex-wrap justify-center gap-x-5 gap-y-3 text-xs ${mutedText} sm:gap-x-7 sm:text-sm`}>
             <div className="flex items-center gap-2">
-              <span className="h-4 w-4 rounded border border-slate-300 bg-white" />
+              <span className={`h-4 w-4 rounded border ${borderColor} ${surface}`} />
               Available
             </div>
+
             <div className="flex items-center gap-2">
-              <span className="h-4 w-4 rounded border border-green-600 bg-green-600" />
+              <span className="h-4 w-4 rounded border border-green-500 bg-green-600" />
               Selected
             </div>
+
             <div className="flex items-center gap-2">
-              <span className="h-4 w-4 rounded border border-slate-300 bg-slate-200" />
+              <span className={`h-4 w-4 rounded border ${borderColor} ${secondarySurface}`} />
               Booked
             </div>
+
             <div className="flex items-center gap-2">
-              <span className="h-4 w-4 rounded border border-purple-300 bg-purple-50" />
+              <span className="h-4 w-4 rounded border border-purple-400 bg-purple-500/20" />
               VIP
             </div>
+
             <div className="flex items-center gap-2">
-              <span className="h-4 w-4 rounded border border-amber-500 bg-amber-100" />
+              <span className="h-4 w-4 rounded border border-amber-500 bg-amber-500/20" />
               Your locked seats
             </div>
           </div>
@@ -451,7 +489,8 @@ function Seats() {
           {seats.length === 0 ? (
             <div className="py-16 text-center">
               <p className="text-lg font-bold">No seats available</p>
-              <p className="mt-2 text-sm text-slate-500">
+
+              <p className={`mt-2 text-sm ${mutedText}`}>
                 Seats have not been configured for this event yet.
               </p>
             </div>
@@ -460,7 +499,8 @@ function Seats() {
               <div className="mx-auto grid w-max grid-cols-4 gap-2.5 sm:grid-cols-6 sm:gap-3 md:grid-cols-8">
                 {seats.map((seat) => {
                   const status = getStatus(seat);
-                  const isAvailable = seat.status === "AVAILABLE";
+                  const isAvailable =
+                    String(seat.status || "").toUpperCase() === "AVAILABLE";
                   const isSelected = selectedIds.has(String(seat.id));
 
                   return (
@@ -475,6 +515,7 @@ function Seats() {
                       className={`flex h-14 w-[4.25rem] flex-col items-center justify-center rounded-xl border-2 text-xs font-bold transition sm:h-16 sm:w-[4.5rem] ${getSeatStyle(seat)} ${isAvailable ? "cursor-pointer" : "cursor-not-allowed"}`}
                     >
                       <span>{seat.seat_number}</span>
+
                       <span className="mt-1 text-[10px] font-medium opacity-80">
                         {formatPrice(seat.price)}
                       </span>
@@ -486,18 +527,18 @@ function Seats() {
           )}
 
           {seats.length > 0 && (
-            <p className="mt-4 text-center text-xs text-slate-400">
+            <p className={`mt-4 text-center text-xs ${mutedText}`}>
               Tip: Select one or more available seats to continue.
             </p>
           )}
         </section>
 
         <section className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+          <div className={`rounded-2xl border ${borderColor} ${surface} p-5 sm:p-6`}>
             <h2 className="text-lg font-extrabold">Your selection</h2>
 
             {selectedSeats.length === 0 ? (
-              <p className="mt-3 text-sm text-slate-500">
+              <p className={`mt-3 text-sm ${mutedText}`}>
                 No seats selected yet. Choose seats from the layout above.
               </p>
             ) : (
@@ -506,20 +547,23 @@ function Seats() {
                   {selectedSeats.map((seat) => (
                     <span
                       key={seat.id}
-                      className="rounded-lg bg-green-50 px-3 py-2 text-sm font-semibold text-green-800"
+                      className="rounded-lg bg-green-500/10 px-3 py-2 text-sm font-semibold text-green-700 dark:text-green-300"
                     >
                       {seat.seat_number}
                     </span>
                   ))}
                 </div>
-                <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
-                  <span className="text-sm text-slate-500">
+
+                <div className={`mt-5 flex items-center justify-between border-t ${borderColor} pt-4`}>
+                  <span className={`text-sm ${mutedText}`}>
                     {selectedSeats.length} selected
                   </span>
+
                   <span className="text-lg font-extrabold">
                     {formatPrice(selectedTotal)}
                   </span>
                 </div>
+
                 <button
                   type="button"
                   onClick={handleLockSeats}
@@ -532,15 +576,17 @@ function Seats() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+          <div className={`rounded-2xl border ${borderColor} ${surface} p-5 sm:p-6`}>
             <h2 className="text-lg font-extrabold">Booking summary</h2>
 
             {lockedSeats.length > 0 && (
-              <div className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
+              <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-300">
                 <p className="font-bold">Seats locked for this booking flow</p>
+
                 <p className="mt-1">
                   {lockedSeats.map((seat) => seat.seat_number).join(", ")}
                 </p>
+
                 <div className="mt-2 flex justify-between gap-3">
                   <span>Locked-seat total</span>
                   <span className="font-bold">{formatPrice(lockedTotal)}</span>
@@ -549,8 +595,8 @@ function Seats() {
             )}
 
             {bookingId && (
-              <div className="mt-4 rounded-xl bg-slate-50 p-3 text-sm">
-                <p className="text-slate-500">Booking ID</p>
+              <div className={`mt-4 rounded-xl ${secondarySurface} p-3 text-sm`}>
+                <p className={mutedText}>Booking ID</p>
                 <p className="mt-1 break-all font-bold">{bookingId}</p>
               </div>
             )}
@@ -578,24 +624,26 @@ function Seats() {
             )}
 
             {paymentSuccess && (
-              <div className="mt-5 rounded-xl border border-green-200 bg-green-50 p-4">
-                <p className="font-bold text-green-800">
+              <div className="mt-5 rounded-xl border border-green-500/30 bg-green-500/10 p-4">
+                <p className="font-bold text-green-700 dark:text-green-300">
                   Payment verified successfully
                 </p>
-                <p className="mt-1 text-sm text-green-700">
+
+                <p className={`mt-1 text-sm ${mutedText}`}>
                   Your booking is ready to view.
                 </p>
+
                 <button
                   type="button"
                   onClick={handleViewTicket}
-                  className="mt-4 min-h-11 w-full rounded-xl bg-green-600 px-4 py-3 text-sm font-bold text-white hover:bg-green-700"
+                  className="mt-4 min-h-11 w-full rounded-xl bg-green-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-green-700"
                 >
                   View my ticket
                 </button>
               </div>
             )}
 
-            <p className="mt-4 text-xs leading-5 text-slate-400">
+            <p className={`mt-4 text-xs leading-5 ${mutedText}`}>
               Final payment amount and booking confirmation are handled by the
               backend. A successful checkout must be verified by the server.
             </p>
@@ -604,21 +652,23 @@ function Seats() {
       </div>
 
       {selectedSeats.length > 0 && !bookingId && !paymentSuccess && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 p-4 shadow-[0_-8px_24px_rgba(15,23,42,0.06)] backdrop-blur lg:hidden">
+        <div className={`fixed inset-x-0 bottom-0 z-30 border-t ${borderColor} ${surface} p-4 shadow-lg backdrop-blur lg:hidden`}>
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-xs text-slate-500">
+              <p className={`text-xs ${mutedText}`}>
                 {selectedSeats.length} seat(s) selected
               </p>
+
               <p className="mt-1 truncate text-lg font-extrabold">
                 {formatPrice(selectedTotal)}
               </p>
             </div>
+
             <button
               type="button"
               onClick={handleLockSeats}
               disabled={locking}
-              className="min-h-12 shrink-0 rounded-xl bg-green-600 px-5 py-3 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-60"
+              className="min-h-12 shrink-0 rounded-xl bg-green-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-green-700 disabled:opacity-60"
             >
               {locking ? "Locking..." : "Continue"}
             </button>

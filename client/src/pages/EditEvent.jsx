@@ -24,6 +24,8 @@ function EditEvent() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchEventData = async () => {
       try {
         setLoading(true);
@@ -35,15 +37,17 @@ function EditEvent() {
             api.get("/events/categories"),
           ]);
 
+        if (cancelled) return;
+
         const event = eventResponse.data.event;
 
         setCategories(categoriesResponse.data.categories || []);
 
-        // Convert the date into the format required by datetime-local.
         const localDate = event.event_date
           ? (() => {
               const date = new Date(event.event_date);
               const offset = date.getTimezoneOffset();
+
               return new Date(date.getTime() - offset * 60000)
                 .toISOString()
                 .slice(0, 16);
@@ -62,16 +66,22 @@ function EditEvent() {
           status: event.status || "PUBLISHED",
         });
       } catch (err) {
+        if (cancelled) return;
+
         console.error("Fetch event error:", err);
         setError(
           err.response?.data?.message || "Failed to load event."
         );
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchEventData();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const handleChange = (event) => {
@@ -111,17 +121,26 @@ function EditEvent() {
   };
 
   const inputClass =
-    "mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100";
+    "mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-900/40";
 
   const labelClass =
-    "block text-sm font-semibold text-slate-700";
+    "block text-sm font-semibold text-slate-700 dark:text-slate-300";
+
+  const sectionHeadingClass =
+    "text-lg font-bold text-slate-900 dark:text-white";
+
+  const sectionDescriptionClass =
+    "mt-1 text-sm text-slate-500 dark:text-slate-400";
+
+  const sectionBorderClass =
+    "mb-5 border-b border-slate-100 pb-3 dark:border-slate-800";
 
   if (loading) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4">
+      <div className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
         <div className="text-center">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
-          <p className="mt-4 text-sm font-medium text-slate-600">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-400" />
+          <p className="mt-4 text-sm font-medium text-slate-600 dark:text-slate-300">
             Loading event details...
           </p>
         </div>
@@ -131,19 +150,24 @@ function EditEvent() {
 
   if (error && !formData.title) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4">
-        <div className="w-full max-w-lg rounded-2xl border border-red-100 bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-2xl text-red-600">
+      <div className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
+        <div className="w-full max-w-lg rounded-2xl border border-red-100 bg-white p-8 text-center shadow-sm dark:border-red-900/50 dark:bg-slate-900">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-2xl text-red-600 dark:bg-red-950/50 dark:text-red-400">
             !
           </div>
-          <h2 className="mt-4 text-xl font-bold text-slate-900">
+
+          <h2 className="mt-4 text-xl font-bold text-slate-900 dark:text-white">
             Unable to load event
           </h2>
-          <p className="mt-2 text-sm text-red-600">{error}</p>
+
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+            {error}
+          </p>
+
           <button
             type="button"
             onClick={() => navigate("/admin")}
-            className="mt-6 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+            className="mt-6 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-blue-600 dark:hover:bg-blue-500"
           >
             Back to Dashboard
           </button>
@@ -153,27 +177,29 @@ function EditEvent() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-10">
+    <div className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-5xl">
         <button
           type="button"
           onClick={() => navigate("/admin")}
-          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-blue-700"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-blue-700 dark:text-slate-300 dark:hover:text-blue-400"
         >
           <span aria-hidden="true">←</span>
           Back to Admin Dashboard
         </button>
 
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="bg-[#14213d] px-6 py-8 text-white sm:px-9">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200">
                   Event Management
                 </p>
+
                 <h1 className="mt-2 text-2xl font-bold sm:text-3xl">
                   Edit Event
                 </h1>
+
                 <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
                   Update event information, schedule, category and
                   publication status.
@@ -190,7 +216,7 @@ function EditEvent() {
             {message && (
               <div
                 role="status"
-                className="mb-6 flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800"
+                className="mb-6 flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-300"
               >
                 <span className="font-bold">✓</span>
                 <p>{message}</p>
@@ -200,18 +226,18 @@ function EditEvent() {
             {error && (
               <div
                 role="alert"
-                className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+                className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300"
               >
                 {error}
               </div>
             )}
 
             <section>
-              <div className="mb-5 border-b border-slate-100 pb-3">
-                <h2 className="text-lg font-bold text-slate-900">
+              <div className={sectionBorderClass}>
+                <h2 className={sectionHeadingClass}>
                   Basic Information
                 </h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className={sectionDescriptionClass}>
                   Enter the event name and description.
                 </p>
               </div>
@@ -221,6 +247,7 @@ function EditEvent() {
                   <label className={labelClass} htmlFor="title">
                     Event Title <span className="text-red-500">*</span>
                   </label>
+
                   <input
                     id="title"
                     type="text"
@@ -237,6 +264,7 @@ function EditEvent() {
                   <label className={labelClass} htmlFor="description">
                     Description <span className="text-red-500">*</span>
                   </label>
+
                   <textarea
                     id="description"
                     name="description"
@@ -252,11 +280,11 @@ function EditEvent() {
             </section>
 
             <section className="mt-9">
-              <div className="mb-5 border-b border-slate-100 pb-3">
-                <h2 className="text-lg font-bold text-slate-900">
+              <div className={sectionBorderClass}>
+                <h2 className={sectionHeadingClass}>
                   Location & Schedule
                 </h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className={sectionDescriptionClass}>
                   Specify where and when the event takes place.
                 </p>
               </div>
@@ -266,6 +294,7 @@ function EditEvent() {
                   <label className={labelClass} htmlFor="venue">
                     Venue <span className="text-red-500">*</span>
                   </label>
+
                   <input
                     id="venue"
                     type="text"
@@ -282,6 +311,7 @@ function EditEvent() {
                   <label className={labelClass} htmlFor="city">
                     City <span className="text-red-500">*</span>
                   </label>
+
                   <input
                     id="city"
                     type="text"
@@ -299,6 +329,7 @@ function EditEvent() {
                     Event Date & Time{" "}
                     <span className="text-red-500">*</span>
                   </label>
+
                   <input
                     id="event_date"
                     type="datetime-local"
@@ -314,6 +345,7 @@ function EditEvent() {
                   <label className={labelClass} htmlFor="category_id">
                     Category <span className="text-red-500">*</span>
                   </label>
+
                   <select
                     id="category_id"
                     name="category_id"
@@ -323,6 +355,7 @@ function EditEvent() {
                     required
                   >
                     <option value="">Select a category</option>
+
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
@@ -334,11 +367,11 @@ function EditEvent() {
             </section>
 
             <section className="mt-9">
-              <div className="mb-5 border-b border-slate-100 pb-3">
-                <h2 className="text-lg font-bold text-slate-900">
+              <div className={sectionBorderClass}>
+                <h2 className={sectionHeadingClass}>
                   Publication Settings
                 </h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className={sectionDescriptionClass}>
                   Choose the current status of this event.
                 </p>
               </div>
@@ -347,6 +380,7 @@ function EditEvent() {
                 <label className={labelClass} htmlFor="status">
                   Event Status
                 </label>
+
                 <select
                   id="status"
                   name="status"
@@ -359,18 +393,18 @@ function EditEvent() {
                   <option value="CANCELLED">Cancelled</option>
                 </select>
 
-                <p className="mt-2 text-xs leading-5 text-slate-500">
+                <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
                   Make sure the selected status matches the event's
                   current state.
                 </p>
               </div>
             </section>
 
-            <div className="mt-9 flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
+            <div className="mt-9 flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 dark:border-slate-800 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={() => navigate("/admin")}
-                className="rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>
@@ -386,14 +420,16 @@ function EditEvent() {
                     Saving Changes...
                   </>
                 ) : (
-                  <>Save Changes <span aria-hidden="true">→</span></>
+                  <>
+                    Save Changes <span aria-hidden="true">→</span>
+                  </>
                 )}
               </button>
             </div>
           </form>
         </div>
 
-        <p className="mt-5 text-center text-xs text-slate-500">
+        <p className="mt-5 text-center text-xs text-slate-500 dark:text-slate-400">
           Changes are submitted to your event management API.
         </p>
       </div>

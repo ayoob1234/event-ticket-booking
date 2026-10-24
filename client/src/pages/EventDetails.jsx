@@ -4,25 +4,26 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
 
 function EventDetails() {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const navigate = useNavigate();
-const token = localStorage.getItem("token");
-const isLoggedIn = Boolean(token);
 
-const handleSeatClick = () => {
-  if (!isLoggedIn) {
-    navigate("/login", {
-      state: { from: `/events/${id}/seats` }
-    });
-    return;
-  }
-
-  navigate(`/events/${id}/seats`);
-};
+  const token = localStorage.getItem("token");
+  const isLoggedIn = Boolean(token);
 
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const handleSeatClick = () => {
+    if (!isLoggedIn) {
+      navigate("/login", {
+        state: { from: `/events/${id}/seats` },
+      });
+      return;
+    }
+
+    navigate(`/events/${id}/seats`);
+  };
 
   useEffect(() => {
     let active = true;
@@ -104,13 +105,21 @@ const handleSeatClick = () => {
     }).format(amount);
   };
 
+  const surface = "bg-[var(--color-surface)]";
+  const secondarySurface = "bg-[var(--color-surface-secondary)]";
+  const borderColor = "border-[var(--color-border)]";
+  const mutedText = "text-[var(--color-text-secondary)]";
+  const primaryText = "text-[var(--color-text)]";
+
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-[var(--color-page)] px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="skeleton mb-6 h-5 w-32" />
+
           <div className="grid gap-8 lg:grid-cols-2">
             <div className="skeleton h-72 w-full rounded-3xl sm:h-96" />
+
             <div className="space-y-5 py-2">
               <div className="skeleton h-5 w-28" />
               <div className="skeleton h-10 w-4/5" />
@@ -127,30 +136,36 @@ const handleSeatClick = () => {
 
   if (error || !event) {
     return (
-      <main className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4">
-        <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 text-center">
+      <main className="flex min-h-[70vh] items-center justify-center bg-[var(--color-page)] px-4">
+        <div
+          className={`w-full max-w-md rounded-3xl border ${borderColor} ${surface} p-8 text-center`}
+        >
           <div className="text-4xl" aria-hidden="true">
             🎟️
           </div>
-          <h1 className="mt-4 text-2xl font-extrabold text-[#14213d]">
+
+          <h1 className={`mt-4 text-2xl font-extrabold ${primaryText}`}>
             {error ? "Unable to load event" : "Event not found"}
           </h1>
-          <p className="mt-2 text-sm leading-6 text-slate-500">
+
+          <p className={`mt-2 text-sm leading-6 ${mutedText}`}>
             {error || "This event may no longer be available."}
           </p>
+
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             {error && (
               <button
                 type="button"
                 onClick={() => window.location.reload()}
-                className="rounded-xl bg-green-600 px-5 py-3 font-semibold text-white hover:bg-green-700"
+                className="rounded-xl bg-green-600 px-5 py-3 font-semibold text-white transition hover:bg-green-700"
               >
                 Try again
               </button>
             )}
+
             <Link
               to="/events"
-              className="rounded-xl border border-slate-200 px-5 py-3 font-semibold text-[#14213d] hover:bg-slate-50"
+              className={`rounded-xl border ${borderColor} px-5 py-3 font-semibold ${primaryText} transition hover:opacity-80`}
             >
               Browse events
             </Link>
@@ -162,6 +177,7 @@ const handleSeatClick = () => {
 
   const poster = getPoster(event);
   const price = getPrice(event);
+
   const eventDate =
     event.event_date ||
     event.start_date ||
@@ -169,11 +185,11 @@ const handleSeatClick = () => {
     event.date;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 text-[#14213d] sm:pb-10">
+    <div className="min-h-screen bg-[var(--color-page)] pb-24 text-[var(--color-text)] transition-colors duration-300 sm:pb-10">
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
         <Link
           to="/events"
-          className="inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-slate-600 transition hover:text-[#14213d]"
+          className={`inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold ${mutedText} transition hover:opacity-75`}
         >
           <span aria-hidden="true">←</span>
           All events
@@ -181,7 +197,9 @@ const handleSeatClick = () => {
 
         <div className="mt-5 grid items-start gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
           <section>
-            <div className="relative flex min-h-64 items-center justify-center overflow-hidden rounded-3xl bg-slate-200 sm:min-h-96">
+            <div
+              className={`relative flex min-h-64 items-center justify-center overflow-hidden rounded-3xl ${secondarySurface} sm:min-h-96`}
+            >
               {poster ? (
                 <img
                   src={poster}
@@ -196,6 +214,7 @@ const handleSeatClick = () => {
                   <span className="text-6xl" aria-hidden="true">
                     ✦
                   </span>
+
                   <p className="mt-3 text-sm font-medium text-slate-200">
                     Event poster coming soon
                   </p>
@@ -203,54 +222,69 @@ const handleSeatClick = () => {
               )}
             </div>
 
-            <div className="mt-8 hidden rounded-2xl border border-slate-200 bg-white p-6 sm:block">
+            <div
+              className={`mt-8 hidden rounded-2xl border ${borderColor} ${surface} p-6 sm:block`}
+            >
               <h2 className="text-lg font-bold">About this event</h2>
-              <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600">
-                {event.description || "More event information will be available soon."}
+
+              <p className={`mt-3 whitespace-pre-line text-sm leading-7 ${mutedText}`}>
+                {event.description ||
+                  "More event information will be available soon."}
               </p>
             </div>
           </section>
 
           <section className="min-w-0">
-            <p className="inline-flex rounded-full bg-green-50 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-green-700">
+            <p className="inline-flex rounded-full bg-green-500/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--color-accent)]">
               Event details
             </p>
 
-            <h1 className="mt-4 break-words text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+            <h1 className={`mt-4 break-words text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl ${primaryText}`}>
               {event.title || "Untitled event"}
             </h1>
 
-            <p className="mt-4 text-sm leading-6 text-slate-500">
+            <p className={`mt-4 text-sm leading-6 ${mutedText}`}>
               {event.description || "Discover this upcoming experience."}
             </p>
 
-            <div className="mt-7 space-y-4 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <div
+              className={`mt-7 space-y-4 rounded-2xl border ${borderColor} ${surface} p-5 sm:p-6`}
+            >
               <div className="flex gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xl">
+                <div
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${secondarySurface} text-xl`}
+                >
                   <span aria-hidden="true">▦</span>
                 </div>
+
                 <div className="min-w-0">
-                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                  <p className={`text-xs font-medium uppercase tracking-wide ${mutedText}`}>
                     Date and time
                   </p>
-                  <p className="mt-1 break-words text-sm font-semibold">
+
+                  <p className={`mt-1 break-words text-sm font-semibold ${primaryText}`}>
                     {formatDate(eventDate)}
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xl">
+                <div
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${secondarySurface} text-xl`}
+                >
                   <span aria-hidden="true">⌖</span>
                 </div>
+
                 <div className="min-w-0">
-                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                  <p className={`text-xs font-medium uppercase tracking-wide ${mutedText}`}>
                     Venue
                   </p>
-                  <p className="mt-1 break-words text-sm font-semibold">
+
+                  <p className={`mt-1 break-words text-sm font-semibold ${primaryText}`}>
                     {event.venue || "Venue to be announced"}
                   </p>
-                  <p className="mt-1 text-sm text-slate-500">
+
+                  <p className={`mt-1 text-sm ${mutedText}`}>
                     {event.city || "Location to be announced"}
                   </p>
                 </div>
@@ -258,14 +292,18 @@ const handleSeatClick = () => {
 
               {event.status && (
                 <div className="flex gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xl">
+                  <div
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${secondarySurface} text-xl`}
+                  >
                     <span aria-hidden="true">✓</span>
                   </div>
+
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    <p className={`text-xs font-medium uppercase tracking-wide ${mutedText}`}>
                       Event status
                     </p>
-                    <p className="mt-1 text-sm font-semibold">
+
+                    <p className={`mt-1 text-sm font-semibold ${primaryText}`}>
                       {event.status}
                     </p>
                   </div>
@@ -273,65 +311,80 @@ const handleSeatClick = () => {
               )}
             </div>
 
-            <div className="mt-6 hidden rounded-2xl border border-slate-200 bg-white p-5 sm:block">
-              <p className="text-sm text-slate-500">Ticket price</p>
-              <p className="mt-1 text-2xl font-extrabold">
+            <div
+              className={`mt-6 hidden rounded-2xl border ${borderColor} ${surface} p-5 sm:block`}
+            >
+              <p className={`text-sm ${mutedText}`}>Ticket price</p>
+
+              <p className={`mt-1 text-2xl font-extrabold ${primaryText}`}>
                 {price || "See available seats"}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+
+              <p className={`mt-1 text-xs ${mutedText}`}>
                 Final price may depend on the seats you select.
               </p>
             </div>
 
-            <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 p-4 backdrop-blur sm:static sm:mt-6 sm:rounded-2xl sm:border sm:bg-white sm:p-5">
+            <div
+              className={`fixed inset-x-0 bottom-0 z-30 border-t ${borderColor} ${surface}/95 p-4 shadow-lg backdrop-blur sm:static sm:mt-6 sm:rounded-2xl sm:border sm:p-5 sm:shadow-none`}
+            >
               <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
                 <div className="min-w-0 sm:hidden">
-                  <p className="text-xs text-slate-500">Ticket price</p>
-                  <p className="mt-1 truncate font-extrabold">
+                  <p className={`text-xs ${mutedText}`}>Ticket price</p>
+
+                  <p className={`mt-1 truncate font-extrabold ${primaryText}`}>
                     {price || "View seats"}
                   </p>
                 </div>
 
                 {isLoggedIn ? (
-  <button
-    type="button"
-    onClick={handleSeatClick}
-    className="flex min-h-12 flex-1 items-center justify-center rounded-xl bg-green-600 px-5 py-3 text-center text-sm font-bold text-white transition hover:bg-green-700 sm:w-full"
-  >
-    Select Seats →
-  </button>
-) : (
-  <div className="flex flex-1 flex-col gap-2 sm:flex-row">
-    <button
-      type="button"
-      onClick={() => navigate("/login", {
-        state: { from: `/events/${id}/seats` }
-      })}
-      className="flex min-h-12 flex-1 items-center justify-center rounded-xl bg-green-600 px-4 py-3 text-sm font-bold text-white hover:bg-green-700"
-    >
-      Login to Book
-    </button>
+                  <button
+                    type="button"
+                    onClick={handleSeatClick}
+                    className="flex min-h-12 flex-1 items-center justify-center rounded-xl bg-green-600 px-5 py-3 text-center text-sm font-bold text-white transition hover:bg-green-700 sm:w-full"
+                  >
+                    Select Seats →
+                  </button>
+                ) : (
+                  <div className="flex flex-1 flex-col gap-2 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        navigate("/login", {
+                          state: { from: `/events/${id}/seats` },
+                        })
+                      }
+                      className="flex min-h-12 flex-1 items-center justify-center rounded-xl bg-green-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-green-700"
+                    >
+                      Login to Book
+                    </button>
 
-    <button
-      type="button"
-      onClick={() => navigate("/register", {
-        state: { from: `/events/${id}/seats` }
-      })}
-      className="flex min-h-12 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-[#14213d] hover:bg-slate-50"
-    >
-      Register
-    </button>
-  </div>
-)}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        navigate("/register", {
+                          state: { from: `/events/${id}/seats` },
+                        })
+                      }
+                      className={`flex min-h-12 flex-1 items-center justify-center rounded-xl border ${borderColor} ${surface} px-4 py-3 text-sm font-bold ${primaryText} transition hover:opacity-80`}
+                    >
+                      Register
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </section>
         </div>
 
-        <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 sm:hidden">
+        <section
+          className={`mt-8 rounded-2xl border ${borderColor} ${surface} p-5 sm:hidden`}
+        >
           <h2 className="text-lg font-bold">About this event</h2>
-          <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600">
-            {event.description || "More event information will be available soon."}
+
+          <p className={`mt-3 whitespace-pre-line text-sm leading-7 ${mutedText}`}>
+            {event.description ||
+              "More event information will be available soon."}
           </p>
         </section>
       </main>

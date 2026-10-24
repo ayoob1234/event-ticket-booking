@@ -61,81 +61,116 @@ export default function ResetPassword() {
     }
   };
 
+  const inputClass =
+    "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-950";
+
+  const labelClass =
+    "mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300";
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
-        <h1 className="mb-2 text-2xl font-bold text-gray-800">
+    <main className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-slate-50 px-4 py-10 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 sm:p-8">
+        <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-2xl text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+          🔒
+        </div>
+
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+          Account Security
+        </p>
+
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           Reset Password
         </h1>
 
-        <p className="mb-6 text-sm text-gray-600">
+        <p className="mt-3 mb-6 text-sm leading-6 text-slate-600 dark:text-slate-400">
           Choose a new password for your Evently account.
         </p>
 
         {message && (
-          <div className="mb-4 rounded-lg bg-green-100 p-3 text-sm text-green-800">
+          <div
+            role="status"
+            className="mb-5 break-words rounded-xl border border-green-200 bg-green-50 p-4 text-sm leading-6 text-green-800 dark:border-green-900 dark:bg-green-950/50 dark:text-green-300"
+          >
             {message}
+            <p className="mt-2 text-xs">
+              Redirecting you to the login page...
+            </p>
           </div>
         )}
 
         {error && (
-          <div className="mb-4 rounded-lg bg-red-100 p-3 text-sm text-red-700">
+          <div
+            role="alert"
+            className="mb-5 break-words rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-700 dark:border-red-900 dark:bg-red-950/50 dark:text-red-300"
+          >
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className={labelClass}>
               New Password
             </label>
+
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               minLength={8}
+              maxLength={128}
               autoComplete="new-password"
               required
               placeholder="At least 8 characters"
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+              className={inputClass}
             />
+
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              Use at least 8 characters.
+            </p>
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="confirmPassword" className={labelClass}>
               Confirm New Password
             </label>
+
             <input
               id="confirmPassword"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               minLength={8}
+              maxLength={128}
               autoComplete="new-password"
               required
               placeholder="Enter password again"
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+              className={inputClass}
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            className="flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-offset-slate-900"
           >
             {loading ? "Resetting..." : "Reset Password"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Remember your password?{" "}
-          <Link to="/login" className="font-semibold text-blue-600 hover:underline">
-            Back to Login
-          </Link>
-        </p>
+        <div className="mt-6 border-t border-slate-200 pt-5 text-center dark:border-slate-800">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Remember your password?{" "}
+            <Link
+              to="/login"
+              className="font-semibold text-blue-600 transition hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Back to Login
+            </Link>
+          </p>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
-

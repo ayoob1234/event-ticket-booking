@@ -14,12 +14,10 @@ function MyBookings() {
   const fetchBookings = useCallback(async () => {
     try {
       setError("");
-
       const response = await api.get("/bookings/me");
       setBookings(response.data?.bookings || []);
     } catch (err) {
       console.error("Fetch bookings error:", err);
-
       setError(
         err.response?.data?.message ||
           "We couldn't load your bookings. Please try again."
@@ -34,9 +32,7 @@ function MyBookings() {
   }, [fetchBookings]);
 
   const handleViewTicket = (bookingId) => {
-    navigate("/ticket", {
-      state: { bookingId },
-    });
+    navigate("/ticket", { state: { bookingId } });
   };
 
   const handleCancelBooking = async (bookingId) => {
@@ -55,14 +51,12 @@ function MyBookings() {
       );
 
       window.alert(
-        response.data?.message ||
-          "Booking cancelled successfully."
+        response.data?.message || "Booking cancelled successfully."
       );
 
       await fetchBookings();
     } catch (err) {
       console.error("Cancel booking error:", err);
-
       window.alert(
         err.response?.data?.message ||
           "Unable to cancel this booking. Please try again."
@@ -76,7 +70,6 @@ function MyBookings() {
     if (!dateValue) return "Date not available";
 
     const date = new Date(dateValue);
-
     if (Number.isNaN(date.getTime())) {
       return "Date not available";
     }
@@ -92,7 +85,6 @@ function MyBookings() {
 
   const formatAmount = (amount) => {
     const value = Number(amount);
-
     if (!Number.isFinite(value)) return "—";
 
     return value.toLocaleString("en-IN", {
@@ -103,16 +95,16 @@ function MyBookings() {
   const getStatusStyle = (status) => {
     switch (status) {
       case "CONFIRMED":
-        return "bg-green-50 text-green-700 ring-green-200";
+        return "bg-green-50 text-green-700 ring-green-200 dark:bg-green-950/50 dark:text-green-300 dark:ring-green-800";
 
       case "CANCELLED":
-        return "bg-red-50 text-red-700 ring-red-200";
+        return "bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/50 dark:text-red-300 dark:ring-red-800";
 
       case "PENDING":
-        return "bg-amber-50 text-amber-700 ring-amber-200";
+        return "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:ring-amber-800";
 
       default:
-        return "bg-slate-100 text-slate-700 ring-slate-200";
+        return "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700";
     }
   };
 
@@ -124,12 +116,24 @@ function MyBookings() {
     (booking) => booking.status === "CANCELLED"
   ).length;
 
+  const pageClass =
+    "min-h-screen bg-slate-50 px-4 py-8 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 sm:px-6 sm:py-10 lg:px-8";
+
+  const cardClass =
+    "rounded-2xl border border-slate-200 bg-white shadow-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900";
+
+  const headingClass = "font-bold text-slate-900 dark:text-white";
+  const mutedClass = "text-slate-600 dark:text-slate-400";
+  const labelClass =
+    "text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400";
+  const valueClass = "font-semibold text-slate-900 dark:text-slate-100";
+
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
+      <main className={pageClass}>
         <div className="mx-auto max-w-6xl">
-          <div className="skeleton mb-3 h-9 w-56" />
-          <div className="skeleton mb-8 h-5 w-72 max-w-full" />
+          <div className="skeleton mb-3 h-9 w-56 rounded-lg" />
+          <div className="skeleton mb-8 h-5 w-72 max-w-full rounded-lg" />
 
           <div className="mb-8 grid gap-4 sm:grid-cols-3">
             {[1, 2, 3].map((item) => (
@@ -149,7 +153,7 @@ function MyBookings() {
             ))}
           </div>
 
-          <p className="mt-6 text-center text-sm text-slate-500">
+          <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
             Loading your bookings...
           </p>
         </div>
@@ -159,17 +163,17 @@ function MyBookings() {
 
   if (error && bookings.length === 0) {
     return (
-      <main className="min-h-[65vh] bg-slate-50 px-4 py-16 sm:px-6">
-        <div className="mx-auto max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-2xl">
+      <main className="min-h-[65vh] bg-slate-50 px-4 py-16 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100 sm:px-6">
+        <div className={`${cardClass} mx-auto max-w-lg p-8 text-center`}>
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-2xl text-red-700 dark:bg-red-950/50 dark:text-red-300">
             !
           </div>
 
-          <h1 className="text-2xl font-bold text-[#14213d]">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             Couldn't load bookings
           </h1>
 
-          <p className="mt-3 text-sm leading-6 text-slate-600">
+          <p className={`mt-3 text-sm leading-6 ${mutedClass}`}>
             {error}
           </p>
 
@@ -179,7 +183,7 @@ function MyBookings() {
               setLoading(true);
               fetchBookings();
             }}
-            className="mt-6 rounded-xl bg-[#14213d] px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className="mt-6 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:bg-green-600 dark:hover:bg-green-500 dark:focus-visible:ring-offset-slate-900"
           >
             Try again
           </button>
@@ -187,7 +191,7 @@ function MyBookings() {
           <div className="mt-5">
             <Link
               to="/events"
-              className="text-sm font-semibold text-green-700 hover:text-green-800"
+              className="text-sm font-semibold text-green-700 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
             >
               Browse events
             </Link>
@@ -198,27 +202,27 @@ function MyBookings() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+    <main className={pageClass}>
       <div className="mx-auto max-w-6xl">
         {/* Page heading */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-green-700">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-green-700 dark:text-green-400">
               Your Evently account
             </p>
 
-            <h1 className="text-3xl font-bold tracking-tight text-[#14213d] sm:text-4xl">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
               My Bookings
             </h1>
 
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
+            <p className={`mt-2 max-w-xl text-sm leading-6 sm:text-base ${mutedClass}`}>
               Keep track of your events, seats, and tickets in one place.
             </p>
           </div>
 
           <Link
             to="/events"
-            className="inline-flex w-fit items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2"
+            className="inline-flex w-fit items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
           >
             <span aria-hidden="true">＋</span>
             Explore events
@@ -230,59 +234,59 @@ function MyBookings() {
           aria-label="Booking summary"
           className="mb-8 grid gap-4 sm:grid-cols-3"
         >
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className={`${cardClass} p-5`}>
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-slate-600">
+              <p className={`text-sm font-medium ${mutedClass}`}>
                 Total bookings
               </p>
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-xl">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-xl dark:bg-blue-950/60">
                 ▤
               </span>
             </div>
 
-            <p className="mt-3 text-3xl font-bold text-[#14213d]">
+            <p className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
               {bookings.length}
             </p>
 
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Booking records
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className={`${cardClass} p-5`}>
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-slate-600">
+              <p className={`text-sm font-medium ${mutedClass}`}>
                 Confirmed
               </p>
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-xl">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-xl dark:bg-green-950/60">
                 ✓
               </span>
             </div>
 
-            <p className="mt-3 text-3xl font-bold text-green-700">
+            <p className="mt-3 text-3xl font-bold text-green-700 dark:text-green-400">
               {confirmedCount}
             </p>
 
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Confirmed booking records
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className={`${cardClass} p-5`}>
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-slate-600">
+              <p className={`text-sm font-medium ${mutedClass}`}>
                 Cancelled
               </p>
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-xl">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-xl dark:bg-red-950/60">
                 ×
               </span>
             </div>
 
-            <p className="mt-3 text-3xl font-bold text-red-600">
+            <p className="mt-3 text-3xl font-bold text-red-600 dark:text-red-400">
               {cancelledCount}
             </p>
 
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Cancelled booking records
             </p>
           </div>
@@ -292,7 +296,7 @@ function MyBookings() {
         {error && (
           <div
             role="alert"
-            className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/50 dark:text-red-300"
           >
             {error}
           </div>
@@ -301,27 +305,27 @@ function MyBookings() {
         {/* Bookings list */}
         <section>
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-xl font-bold text-[#14213d] sm:text-2xl">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
               Your tickets
             </h2>
 
-            <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">
+            <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700">
               {bookings.length}{" "}
               {bookings.length === 1 ? "record" : "records"}
             </span>
           </div>
 
           {bookings.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-12 text-center sm:px-10">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-3xl">
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-12 text-center transition-colors dark:border-slate-700 dark:bg-slate-900 sm:px-10">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-3xl dark:bg-slate-800">
                 🎟️
               </div>
 
-              <h3 className="mt-5 text-xl font-bold text-[#14213d]">
+              <h3 className="mt-5 text-xl font-bold text-slate-900 dark:text-white">
                 Your next experience starts here
               </h3>
 
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
+              <p className={`mx-auto mt-2 max-w-md text-sm leading-6 ${mutedClass}`}>
                 You haven't made any bookings yet. Explore upcoming events
                 and find something you'll love.
               </p>
@@ -338,27 +342,27 @@ function MyBookings() {
               {bookings.map((booking, index) => (
                 <article
                   key={`${booking.booking_id}-${booking.seat_number ?? index}`}
-                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
+                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-colors duration-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
                 >
                   {/* Card header */}
-                  <div className="border-b border-slate-100 p-5 sm:p-6">
+                  <div className="border-b border-slate-100 p-5 dark:border-slate-800 sm:p-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex min-w-0 gap-4">
-                        <div className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#14213d] text-2xl text-white sm:flex">
+                        <div className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-2xl text-white dark:bg-green-700 sm:flex">
                           ♫
                         </div>
 
                         <div className="min-w-0">
-                          <h3 className="break-words text-xl font-bold text-[#14213d] sm:text-2xl">
+                          <h3 className="break-words text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
                             {booking.event_title || "Event"}
                           </h3>
 
-                          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                             <span aria-hidden="true">▦</span>
                             {formatDate(booking.event_date)}
                           </p>
 
-                          <p className="mt-1 break-words text-sm text-slate-600">
+                          <p className="mt-1 break-words text-sm text-slate-600 dark:text-slate-300">
                             <span aria-hidden="true">⌖</span>{" "}
                             {[booking.venue, booking.city]
                               .filter(Boolean)
@@ -384,53 +388,40 @@ function MyBookings() {
                   {/* Booking details */}
                   <div className="grid gap-5 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Booking ID
-                      </p>
-
-                      <p className="mt-2 break-all font-semibold text-[#14213d]">
+                      <p className={labelClass}>Booking ID</p>
+                      <p className={`mt-2 break-all ${valueClass}`}>
                         {booking.booking_id}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Seat number
-                      </p>
-
-                      <p className="mt-2 font-semibold text-[#14213d]">
+                      <p className={labelClass}>Seat number</p>
+                      <p className={`mt-2 ${valueClass}`}>
                         {booking.seat_number || "—"}
                       </p>
-
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         Category: {booking.category || "Standard"}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Seat price
-                      </p>
-
-                      <p className="mt-2 font-semibold text-[#14213d]">
+                      <p className={labelClass}>Seat price</p>
+                      <p className={`mt-2 ${valueClass}`}>
                         ₹{formatAmount(booking.price)}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Booking amount
-                      </p>
-
-                      <p className="mt-2 text-xl font-bold text-[#14213d]">
+                      <p className={labelClass}>Booking amount</p>
+                      <p className="mt-2 text-xl font-bold text-slate-900 dark:text-white">
                         ₹{formatAmount(booking.total_amount)}
                       </p>
                     </div>
                   </div>
 
                   {/* Card actions */}
-                  <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/70 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                    <p className="text-xs leading-5 text-slate-500">
+                  <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-950/60 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                    <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
                       {booking.status === "CONFIRMED"
                         ? "Your booking is confirmed. Keep your ticket ready for entry."
                         : booking.status === "CANCELLED"
@@ -445,7 +436,7 @@ function MyBookings() {
                           onClick={() =>
                             handleViewTicket(booking.booking_id)
                           }
-                          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#14213d] px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14213d] focus-visible:ring-offset-2"
+                          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:bg-green-600 dark:hover:bg-green-500 dark:focus-visible:ring-offset-slate-900"
                         >
                           <span aria-hidden="true">▣</span>
                           View Ticket
@@ -457,7 +448,7 @@ function MyBookings() {
                             handleCancelBooking(booking.booking_id)
                           }
                           disabled={cancellingId === booking.booking_id}
-                          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900 dark:bg-slate-900 dark:text-red-300 dark:hover:bg-red-950/50"
                         >
                           {cancellingId === booking.booking_id
                             ? "Cancelling..."
@@ -465,7 +456,7 @@ function MyBookings() {
                         </button>
                       </div>
                     ) : booking.status === "CANCELLED" ? (
-                      <span className="text-sm font-semibold text-red-600">
+                      <span className="text-sm font-semibold text-red-600 dark:text-red-400">
                         Booking cancelled
                       </span>
                     ) : null}
@@ -480,7 +471,7 @@ function MyBookings() {
         <div className="mt-8">
           <Link
             to="/events"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-green-700"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-green-700 dark:text-slate-400 dark:hover:text-green-400"
           >
             <span aria-hidden="true">←</span>
             Back to events

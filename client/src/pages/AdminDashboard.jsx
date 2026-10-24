@@ -19,6 +19,18 @@ const initialSeat = {
   price: "",
 };
 
+const panelClass =
+  "rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900";
+
+const mutedClass = "text-slate-500 dark:text-slate-400";
+const labelClass = "mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200";
+
+const inputClass =
+  "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-green-600 focus:ring-4 focus:ring-green-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-green-500 dark:focus:ring-green-900/40";
+
+const secondaryButtonClass =
+  "rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700";
+
 function AdminDashboard() {
   const navigate = useNavigate();
 
@@ -37,7 +49,6 @@ function AdminDashboard() {
   const [seatSuccess, setSeatSuccess] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const [formData, setFormData] = useState({ ...initialForm });
 
   const fetchDashboard = useCallback(async () => {
@@ -67,8 +78,7 @@ function AdminDashboard() {
     } catch (err) {
       console.error("Admin dashboard error:", err);
       setError(
-        err.response?.data?.message ||
-          "Failed to load dashboard data."
+        err.response?.data?.message || "Failed to load dashboard data."
       );
     } finally {
       setLoading(false);
@@ -193,11 +203,7 @@ function AdminDashboard() {
   };
 
   const handleCancelEvent = async (eventId) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to cancel this event?"
-      )
-    ) {
+    if (!window.confirm("Are you sure you want to cancel this event?")) {
       return;
     }
 
@@ -264,20 +270,20 @@ function AdminDashboard() {
   };
 
   const StatCard = ({ label, value, hint, icon, accent = false }) => (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6">
+    <div className={`${panelClass} p-5 transition hover:-translate-y-0.5 hover:shadow-md sm:p-6`}>
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-3 break-words text-3xl font-bold tracking-tight text-[#14213d]">
+        <div className="min-w-0">
+          <p className={`text-sm font-medium ${mutedClass}`}>{label}</p>
+          <p className="mt-3 break-words text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             {value}
           </p>
-          <p className="mt-2 text-xs text-slate-500">{hint}</p>
+          <p className={`mt-2 text-xs ${mutedClass}`}>{hint}</p>
         </div>
         <div
           className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${
             accent
-              ? "bg-green-50 text-green-700"
-              : "bg-slate-100 text-[#14213d]"
+              ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
+              : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
           }`}
         >
           {icon}
@@ -288,17 +294,17 @@ function AdminDashboard() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 p-5 sm:p-8">
+      <main className="min-h-screen bg-slate-50 p-5 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:p-8">
         <div className="mx-auto max-w-7xl">
-          <div className="skeleton mb-3 h-9 w-64" />
-          <div className="skeleton mb-8 h-5 w-80 max-w-full" />
+          <div className="skeleton mb-3 h-9 w-64 rounded-lg" />
+          <div className="skeleton mb-8 h-5 w-80 max-w-full rounded-lg" />
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {[1, 2, 3, 4].map((item) => (
               <div key={item} className="skeleton h-36 rounded-2xl" />
             ))}
           </div>
           <div className="skeleton mt-8 h-72 rounded-2xl" />
-          <p className="mt-5 text-sm text-slate-500">
+          <p className={`mt-5 text-sm ${mutedClass}`}>
             Loading your admin dashboard...
           </p>
         </div>
@@ -308,12 +314,12 @@ function AdminDashboard() {
 
   if (error && events.length === 0) {
     return (
-      <main className="flex min-h-[65vh] items-center justify-center bg-slate-50 px-4">
-        <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <h1 className="text-2xl font-bold text-[#14213d]">
-            Dashboard unavailable
-          </h1>
-          <p className="mt-3 text-sm leading-6 text-red-600">{error}</p>
+      <main className="flex min-h-[65vh] items-center justify-center bg-slate-50 px-4 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+        <div className={`${panelClass} w-full max-w-lg p-8 text-center`}>
+          <h1 className="text-2xl font-bold">Dashboard unavailable</h1>
+          <p className="mt-3 text-sm leading-6 text-red-600 dark:text-red-400">
+            {error}
+          </p>
           <button
             type="button"
             onClick={() => {
@@ -330,22 +336,20 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-[#14213d]">
-      {/* Mobile overlay */}
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       {sidebarOpen && (
         <button
           type="button"
           aria-label="Close navigation menu"
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-40 bg-slate-950/40 lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/60 lg:hidden"
         />
       )}
 
-      {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-[#14213d] text-white transition-transform duration-200 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-[#14213d] text-white transition-transform duration-200 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } lg:translate-x-0`}
       >
         <div className="flex h-20 items-center justify-between border-b border-white/10 px-6">
           <div>
@@ -414,21 +418,20 @@ function AdminDashboard() {
         </div>
       </aside>
 
-      {/* Main content */}
       <div className="min-h-screen lg:pl-72">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-7">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur transition-colors dark:border-slate-800 dark:bg-slate-900/95 sm:px-7">
           <div className="flex items-center gap-3">
             <button
               type="button"
               aria-label="Open navigation menu"
               onClick={() => setSidebarOpen(true)}
-              className="rounded-xl border border-slate-200 px-3 py-2 text-lg hover:bg-slate-50 lg:hidden"
+              className="rounded-xl border border-slate-200 px-3 py-2 text-lg hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800 lg:hidden"
             >
               ☰
             </button>
             <div>
               <p className="text-sm font-semibold">Admin workspace</p>
-              <p className="hidden text-xs text-slate-500 sm:block">
+              <p className={`hidden text-xs ${mutedClass} sm:block`}>
                 Manage your event booking platform
               </p>
             </div>
@@ -440,9 +443,9 @@ function AdminDashboard() {
               setLoading(true);
               fetchDashboard();
             }}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:px-4"
+            className={secondaryButtonClass}
           >
-            <span aria-hidden="true">↻</span>
+            <span aria-hidden="true">↻</span>{" "}
             <span className="hidden sm:inline">Refresh data</span>
             <span className="sm:hidden">Refresh</span>
           </button>
@@ -452,23 +455,22 @@ function AdminDashboard() {
           {error && (
             <div
               role="alert"
-              className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+              className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/50 dark:text-amber-200"
             >
               {error}
             </div>
           )}
 
-          {/* Overview */}
           <section id="overview" className="scroll-mt-24">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm font-semibold text-green-700">
+                <p className="text-sm font-semibold text-green-700 dark:text-green-400">
                   YOUR EVENTLY WORKSPACE
                 </p>
                 <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
                   Dashboard Overview
                 </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+                <p className={`mt-2 max-w-2xl text-sm leading-6 sm:text-base ${mutedClass}`}>
                   Monitor events, manage seats and review booking activity.
                 </p>
               </div>
@@ -484,250 +486,105 @@ function AdminDashboard() {
             </div>
 
             <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <StatCard
-                label="Total events"
-                value={events.length}
-                hint="Events returned by the API"
-                icon="▤"
-              />
-              <StatCard
-                label="Published"
-                value={publishedCount}
-                hint="Currently published events"
-                icon="✓"
-                accent
-              />
-              <StatCard
-                label="Draft events"
-                value={draftCount}
-                hint="Not yet published"
-                icon="✎"
-              />
-              <StatCard
-                label="Cancelled events"
-                value={cancelledCount}
-                hint="Events marked as cancelled"
-                icon="×"
-              />
+              <StatCard label="Total events" value={events.length} hint="Events returned by the API" icon="▤" />
+              <StatCard label="Published" value={publishedCount} hint="Currently published events" icon="✓" accent />
+              <StatCard label="Draft events" value={draftCount} hint="Not yet published" icon="✎" />
+              <StatCard label="Cancelled events" value={cancelledCount} hint="Events marked as cancelled" icon="×" />
             </div>
 
             <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <StatCard
-                label="Total seats"
-                value={seatStats.total_seats ?? "—"}
-                hint="For the first listed event"
-                icon="▦"
-              />
-              <StatCard
-                label="Confirmed bookings"
-                value={bookingStats.confirmed_bookings ?? "—"}
-                hint="For the first listed event"
-                icon="✓"
-                accent
-              />
-              <StatCard
-                label="Available seats"
-                value={seatStats.available_seats ?? "—"}
-                hint="For the first listed event"
-                icon="◷"
-              />
+              <StatCard label="Total seats" value={seatStats.total_seats ?? "—"} hint="For the first listed event" icon="▦" />
+              <StatCard label="Confirmed bookings" value={bookingStats.confirmed_bookings ?? "—"} hint="For the first listed event" icon="✓" accent />
+              <StatCard label="Available seats" value={seatStats.available_seats ?? "—"} hint="For the first listed event" icon="◷" />
               <StatCard
                 label="Reported revenue"
-                value={
-                  revenue == null
-                    ? "—"
-                    : `₹${Number(revenue).toLocaleString("en-IN")}`
-                }
+                value={revenue == null ? "—" : `₹${Number(revenue).toLocaleString("en-IN")}`}
                 hint="For the first listed event"
                 icon="₹"
                 accent
               />
             </div>
 
-            <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs leading-5 text-blue-900 sm:text-sm">
+            <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs leading-5 text-blue-900 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200 sm:text-sm">
               <strong>Statistics note:</strong> Your current backend returns
               event statistics for the first listed event. The seat, booking
               and revenue cards reflect that event, not platform-wide totals.
             </div>
 
             <div className="mt-7 grid gap-4 md:grid-cols-3">
-              <button
-                type="button"
-                onClick={() => goToSection("events")}
-                className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-green-300 hover:shadow-md"
-              >
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-2xl">
-                  ▤
-                </span>
+              <button type="button" onClick={() => goToSection("events")} className={`${panelClass} flex items-center gap-4 p-5 text-left transition hover:border-green-300 hover:shadow-md`}>
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-2xl dark:bg-blue-950">▤</span>
                 <span>
                   <span className="block font-bold">Manage events</span>
-                  <span className="mt-1 block text-sm text-slate-500">
-                    Edit or cancel existing events
-                  </span>
+                  <span className={`mt-1 block text-sm ${mutedClass}`}>Edit or cancel existing events</span>
                 </span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => goToSection("seats")}
-                className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-green-300 hover:shadow-md"
-              >
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-2xl">
-                  ▦
-                </span>
+              <button type="button" onClick={() => goToSection("seats")} className={`${panelClass} flex items-center gap-4 p-5 text-left transition hover:border-green-300 hover:shadow-md`}>
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-2xl dark:bg-green-950">▦</span>
                 <span>
                   <span className="block font-bold">Manage seats</span>
-                  <span className="mt-1 block text-sm text-slate-500">
-                    Configure categories and prices
-                  </span>
+                  <span className={`mt-1 block text-sm ${mutedClass}`}>Configure categories and prices</span>
                 </span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => goToSection("verify")}
-                className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-green-300 hover:shadow-md"
-              >
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-2xl">
-                  ✓
-                </span>
+              <button type="button" onClick={() => goToSection("verify")} className={`${panelClass} flex items-center gap-4 p-5 text-left transition hover:border-green-300 hover:shadow-md`}>
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-2xl dark:bg-amber-950">✓</span>
                 <span>
                   <span className="block font-bold">Verify tickets</span>
-                  <span className="mt-1 block text-sm text-slate-500">
-                    Open the ticket check-in page
-                  </span>
+                  <span className={`mt-1 block text-sm ${mutedClass}`}>Open the ticket check-in page</span>
                 </span>
               </button>
             </div>
           </section>
 
-          {/* Create event */}
-          <section
-            id="create"
-            className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white shadow-sm"
-          >
-            <div className="border-b border-slate-100 p-5 sm:p-7">
-              <p className="text-xs font-semibold uppercase tracking-wider text-green-700">
-                EVENT SETUP
-              </p>
-              <h2 className="mt-2 text-xl font-bold sm:text-2xl">
-                Create a new event
-              </h2>
-              <p className="mt-2 text-sm text-slate-500">
-                Enter the event details and choose its publication status.
-              </p>
+          <section id="create" className={`${panelClass} scroll-mt-24`}>
+            <div className="border-b border-slate-100 p-5 dark:border-slate-800 sm:p-7">
+              <p className="text-xs font-semibold uppercase tracking-wider text-green-700 dark:text-green-400">EVENT SETUP</p>
+              <h2 className="mt-2 text-xl font-bold sm:text-2xl">Create a new event</h2>
+              <p className={`mt-2 text-sm ${mutedClass}`}>Enter the event details and choose its publication status.</p>
             </div>
 
             <form onSubmit={handleCreateEvent} className="space-y-5 p-5 sm:p-7">
               <div className="grid gap-5 md:grid-cols-2">
                 <div>
-                  <label htmlFor="title" className="mb-2 block text-sm font-semibold text-slate-700">
-                    Event title
-                  </label>
-                  <input
-                    id="title"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    placeholder="e.g. Live Music Night"
-                    required
-                    className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100"
-                  />
+                  <label htmlFor="title" className={labelClass}>Event title</label>
+                  <input id="title" name="title" value={formData.title} onChange={handleInputChange} placeholder="e.g. Live Music Night" required className={inputClass} />
                 </div>
 
                 <div>
-                  <label htmlFor="category_id" className="mb-2 block text-sm font-semibold text-slate-700">
-                    Category
-                  </label>
-                  <select
-                    id="category_id"
-                    name="category_id"
-                    value={formData.category_id}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100"
-                  >
+                  <label htmlFor="category_id" className={labelClass}>Category</label>
+                  <select id="category_id" name="category_id" value={formData.category_id} onChange={handleInputChange} required className={inputClass}>
                     <option value="">Select category</option>
                     {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
+                      <option key={category.id} value={category.id}>{category.name}</option>
                     ))}
                   </select>
                 </div>
 
                 <div className="md:col-span-2">
-                  <label htmlFor="description" className="mb-2 block text-sm font-semibold text-slate-700">
-                    Description
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    rows={4}
-                    placeholder="Describe the event, its highlights and what guests can expect..."
-                    required
-                    className="w-full resize-y rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100"
-                  />
+                  <label htmlFor="description" className={labelClass}>Description</label>
+                  <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} rows={4} placeholder="Describe the event, its highlights and what guests can expect..." required className={`${inputClass} resize-y`} />
                 </div>
 
                 <div>
-                  <label htmlFor="venue" className="mb-2 block text-sm font-semibold text-slate-700">
-                    Venue
-                  </label>
-                  <input
-                    id="venue"
-                    name="venue"
-                    value={formData.venue}
-                    onChange={handleInputChange}
-                    placeholder="Venue name"
-                    required
-                    className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100"
-                  />
+                  <label htmlFor="venue" className={labelClass}>Venue</label>
+                  <input id="venue" name="venue" value={formData.venue} onChange={handleInputChange} placeholder="Venue name" required className={inputClass} />
                 </div>
 
                 <div>
-                  <label htmlFor="city" className="mb-2 block text-sm font-semibold text-slate-700">
-                    City
-                  </label>
-                  <input
-                    id="city"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    placeholder="City"
-                    required
-                    className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100"
-                  />
+                  <label htmlFor="city" className={labelClass}>City</label>
+                  <input id="city" name="city" value={formData.city} onChange={handleInputChange} placeholder="City" required className={inputClass} />
                 </div>
 
                 <div>
-                  <label htmlFor="event_date" className="mb-2 block text-sm font-semibold text-slate-700">
-                    Event date and time
-                  </label>
-                  <input
-                    id="event_date"
-                    type="datetime-local"
-                    name="event_date"
-                    value={formData.event_date}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100"
-                  />
+                  <label htmlFor="event_date" className={labelClass}>Event date and time</label>
+                  <input id="event_date" type="datetime-local" name="event_date" value={formData.event_date} onChange={handleInputChange} required className={inputClass} />
                 </div>
 
                 <div>
-                  <label htmlFor="status" className="mb-2 block text-sm font-semibold text-slate-700">
-                    Publication status
-                  </label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100"
-                  >
+                  <label htmlFor="status" className={labelClass}>Publication status</label>
+                  <select id="status" name="status" value={formData.status} onChange={handleInputChange} className={inputClass}>
                     <option value="PUBLISHED">Published</option>
                     <option value="DRAFT">Draft</option>
                   </select>
@@ -735,126 +592,59 @@ function AdminDashboard() {
               </div>
 
               {createMessage && (
-                <div
-                  role="status"
-                  className={`rounded-xl border px-4 py-3 text-sm ${
-                    createSuccess
-                      ? "border-green-200 bg-green-50 text-green-800"
-                      : "border-red-200 bg-red-50 text-red-700"
-                  }`}
-                >
+                <div role="status" className={`rounded-xl border px-4 py-3 text-sm ${
+                  createSuccess
+                    ? "border-green-200 bg-green-50 text-green-800 dark:border-green-900 dark:bg-green-950/50 dark:text-green-200"
+                    : "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/50 dark:text-red-200"
+                }`}>
                   {createMessage}
                 </div>
               )}
 
-              <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFormData({ ...initialForm });
-                    setCreateMessage("");
-                  }}
-                  className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                >
-                  Clear form
-                </button>
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
-                >
+              <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 dark:border-slate-800 sm:flex-row sm:justify-end">
+                <button type="button" onClick={() => { setFormData({ ...initialForm }); setCreateMessage(""); }} className={secondaryButtonClass}>Clear form</button>
+                <button type="submit" disabled={creating} className="rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60">
                   {creating ? "Creating event..." : "+ Create event"}
                 </button>
               </div>
             </form>
           </section>
 
-          {/* Seat layout */}
-          <section
-            id="seats"
-            className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white shadow-sm"
-          >
-            <div className="border-b border-slate-100 p-5 sm:p-7">
-              <p className="text-xs font-semibold uppercase tracking-wider text-green-700">
-                SEATING CONFIGURATION
-              </p>
-              <h2 className="mt-2 text-xl font-bold sm:text-2xl">
-                Manage seat layout
-              </h2>
-              <p className="mt-2 text-sm text-slate-500">
-                Assign seat numbers, ticket categories and prices to an event.
-              </p>
+          <section id="seats" className={`${panelClass} scroll-mt-24`}>
+            <div className="border-b border-slate-100 p-5 dark:border-slate-800 sm:p-7">
+              <p className="text-xs font-semibold uppercase tracking-wider text-green-700 dark:text-green-400">SEATING CONFIGURATION</p>
+              <h2 className="mt-2 text-xl font-bold sm:text-2xl">Manage seat layout</h2>
+              <p className={`mt-2 text-sm ${mutedClass}`}>Assign seat numbers, ticket categories and prices to an event.</p>
             </div>
 
             <form onSubmit={handleCreateSeats} className="space-y-5 p-5 sm:p-7">
               <div>
-                <label htmlFor="seat-event" className="mb-2 block text-sm font-semibold text-slate-700">
-                  Select event
-                </label>
-                <select
-                  id="seat-event"
-                  value={seatEventId}
-                  onChange={(event) => setSeatEventId(event.target.value)}
-                  required
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100"
-                >
+                <label htmlFor="seat-event" className={labelClass}>Select event</label>
+                <select id="seat-event" value={seatEventId} onChange={(event) => setSeatEventId(event.target.value)} required className={inputClass}>
                   <option value="">Choose an event</option>
-                  {events.map((event) => (
-                    <option key={event.id} value={event.id}>
-                      {event.title}
-                    </option>
-                  ))}
+                  {events.map((event) => <option key={event.id} value={event.id}>{event.title}</option>)}
                 </select>
               </div>
 
               <div className="space-y-4">
                 {seatRows.map((seat, index) => (
-                  <div
-                    key={index}
-                    className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5"
-                  >
+                  <div key={index} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-800/60 sm:p-5">
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <h3 className="font-bold">Seat {index + 1}</h3>
                       {seatRows.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeSeatRow(index)}
-                          className="rounded-lg px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
-                        >
-                          Remove
-                        </button>
+                        <button type="button" onClick={() => removeSeatRow(index)} className="rounded-lg px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/50">Remove</button>
                       )}
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-3">
                       <div>
-                        <label htmlFor={`seat-number-${index}`} className="mb-2 block text-xs font-semibold text-slate-600">
-                          Seat number
-                        </label>
-                        <input
-                          id={`seat-number-${index}`}
-                          value={seat.seat_number}
-                          onChange={(event) =>
-                            handleSeatChange(index, "seat_number", event.target.value)
-                          }
-                          placeholder="A1"
-                          required
-                          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100"
-                        />
+                        <label htmlFor={`seat-number-${index}`} className={labelClass}>Seat number</label>
+                        <input id={`seat-number-${index}`} value={seat.seat_number} onChange={(event) => handleSeatChange(index, "seat_number", event.target.value)} placeholder="A1" required className={inputClass} />
                       </div>
 
                       <div>
-                        <label htmlFor={`seat-category-${index}`} className="mb-2 block text-xs font-semibold text-slate-600">
-                          Category
-                        </label>
-                        <select
-                          id={`seat-category-${index}`}
-                          value={seat.category}
-                          onChange={(event) =>
-                            handleSeatChange(index, "category", event.target.value)
-                          }
-                          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100"
-                        >
+                        <label htmlFor={`seat-category-${index}`} className={labelClass}>Category</label>
+                        <select id={`seat-category-${index}`} value={seat.category} onChange={(event) => handleSeatChange(index, "category", event.target.value)} className={inputClass}>
                           <option value="SILVER">Silver</option>
                           <option value="GOLD">Gold</option>
                           <option value="VIP">VIP</option>
@@ -862,22 +652,8 @@ function AdminDashboard() {
                       </div>
 
                       <div>
-                        <label htmlFor={`seat-price-${index}`} className="mb-2 block text-xs font-semibold text-slate-600">
-                          Price (₹)
-                        </label>
-                        <input
-                          id={`seat-price-${index}`}
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={seat.price}
-                          onChange={(event) =>
-                            handleSeatChange(index, "price", event.target.value)
-                          }
-                          placeholder="500"
-                          required
-                          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100"
-                        />
+                        <label htmlFor={`seat-price-${index}`} className={labelClass}>Price (₹)</label>
+                        <input id={`seat-price-${index}`} type="number" min="0" step="0.01" value={seat.price} onChange={(event) => handleSeatChange(index, "price", event.target.value)} placeholder="500" required className={inputClass} />
                       </div>
                     </div>
                   </div>
@@ -885,55 +661,32 @@ function AdminDashboard() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <button
-                  type="button"
-                  onClick={addSeatRow}
-                  className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-[#14213d] hover:bg-slate-50"
-                >
-                  + Add another seat
-                </button>
-                <button
-                  type="submit"
-                  disabled={creatingSeats}
-                  className="rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
-                >
+                <button type="button" onClick={addSeatRow} className={secondaryButtonClass}>+ Add another seat</button>
+                <button type="submit" disabled={creatingSeats} className="rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60">
                   {creatingSeats ? "Creating seats..." : "Create seats"}
                 </button>
               </div>
 
               {seatMessage && (
-                <div
-                  role="status"
-                  className={`rounded-xl border px-4 py-3 text-sm ${
-                    seatSuccess
-                      ? "border-green-200 bg-green-50 text-green-800"
-                      : "border-red-200 bg-red-50 text-red-700"
-                  }`}
-                >
+                <div role="status" className={`rounded-xl border px-4 py-3 text-sm ${
+                  seatSuccess
+                    ? "border-green-200 bg-green-50 text-green-800 dark:border-green-900 dark:bg-green-950/50 dark:text-green-200"
+                    : "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/50 dark:text-red-200"
+                }`}>
                   {seatMessage}
                 </div>
               )}
             </form>
           </section>
 
-          {/* Event management */}
-          <section
-            id="events"
-            className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white shadow-sm"
-          >
-            <div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+          <section id="events" className={`${panelClass} scroll-mt-24`}>
+            <div className="flex flex-col gap-3 border-b border-slate-100 p-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:p-7">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-green-700">
-                  YOUR EVENT CATALOG
-                </p>
-                <h2 className="mt-2 text-xl font-bold sm:text-2xl">
-                  Manage events
-                </h2>
-                <p className="mt-2 text-sm text-slate-500">
-                  Update event details or cancel an event.
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-green-700 dark:text-green-400">YOUR EVENT CATALOG</p>
+                <h2 className="mt-2 text-xl font-bold sm:text-2xl">Manage events</h2>
+                <p className={`mt-2 text-sm ${mutedClass}`}>Update event details or cancel an event.</p>
               </div>
-              <span className="w-fit rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+              <span className="w-fit rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                 {events.length} {events.length === 1 ? "event" : "events"}
               </span>
             </div>
@@ -942,75 +695,39 @@ function AdminDashboard() {
               <div className="p-10 text-center">
                 <div className="text-4xl">▤</div>
                 <h3 className="mt-4 font-bold">No events yet</h3>
-                <p className="mt-2 text-sm text-slate-500">
-                  Create your first event to start building your catalog.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => goToSection("create")}
-                  className="mt-5 rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white hover:bg-green-700"
-                >
-                  Create your first event
-                </button>
+                <p className={`mt-2 text-sm ${mutedClass}`}>Create your first event to start building your catalog.</p>
+                <button type="button" onClick={() => goToSection("create")} className="mt-5 rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white hover:bg-green-700">Create your first event</button>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {events.map((event) => (
-                  <article
-                    key={event.id}
-                    className="flex flex-col gap-4 p-5 transition hover:bg-slate-50/70 sm:p-6 lg:flex-row lg:items-center lg:justify-between"
-                  >
+                  <article key={event.id} className="flex flex-col gap-4 p-5 transition hover:bg-slate-50/70 dark:hover:bg-slate-800/40 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex min-w-0 gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#14213d] text-xl text-white">
-                        ♫
-                      </div>
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#14213d] text-xl text-white">♫</div>
                       <div className="min-w-0">
-                        <h3 className="break-words text-base font-bold text-[#14213d] sm:text-lg">
-                          {event.title}
-                        </h3>
-                        <p className="mt-1 break-words text-sm text-slate-500">
-                          {[event.venue, event.city].filter(Boolean).join(" · ") ||
-                            "Venue details unavailable"}
+                        <h3 className="break-words text-base font-bold sm:text-lg">{event.title}</h3>
+                        <p className={`mt-1 break-words text-sm ${mutedClass}`}>
+                          {[event.venue, event.city].filter(Boolean).join(" · ") || "Venue details unavailable"}
                         </p>
-                        <p className="mt-2 text-xs text-slate-500">
-                          Event ID: {event.id}
-                        </p>
+                        <p className={`mt-2 text-xs ${mutedClass}`}>Event ID: {event.id}</p>
                       </div>
                     </div>
 
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                      <span
-                        className={`w-fit rounded-full px-3 py-1.5 text-xs font-bold ${
-                          event.status === "PUBLISHED"
-                            ? "bg-green-50 text-green-700"
-                            : event.status === "CANCELLED"
-                              ? "bg-red-50 text-red-700"
-                              : "bg-amber-50 text-amber-700"
-                        }`}
-                      >
+                      <span className={`w-fit rounded-full px-3 py-1.5 text-xs font-bold ${
+                        event.status === "PUBLISHED"
+                          ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
+                          : event.status === "CANCELLED"
+                            ? "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"
+                            : "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                      }`}>
                         {event.status || "UNKNOWN"}
                       </span>
 
                       <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            navigate(`/admin/events/${event.id}/edit`)
-                          }
-                          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-[#14213d] hover:bg-slate-100"
-                        >
-                          Edit event
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleCancelEvent(event.id)}
-                          disabled={event.status === "CANCELLED"}
-                          className="rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {event.status === "CANCELLED"
-                            ? "Cancelled"
-                            : "Cancel event"}
+                        <button type="button" onClick={() => navigate(`/admin/events/${event.id}/edit`)} className={secondaryButtonClass}>Edit event</button>
+                        <button type="button" onClick={() => handleCancelEvent(event.id)} disabled={event.status === "CANCELLED"} className="rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/50">
+                          {event.status === "CANCELLED" ? "Cancelled" : "Cancel event"}
                         </button>
                       </div>
                     </div>
@@ -1020,27 +737,20 @@ function AdminDashboard() {
             )}
           </section>
 
-          {/* Detailed statistics */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-            <p className="text-xs font-semibold uppercase tracking-wider text-green-700">
-              EVENT INSIGHTS
-            </p>
-            <h2 className="mt-2 text-xl font-bold sm:text-2xl">
-              Seat & booking statistics
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-500">
+          <section className={`${panelClass} p-5 sm:p-7`}>
+            <p className="text-xs font-semibold uppercase tracking-wider text-green-700 dark:text-green-400">EVENT INSIGHTS</p>
+            <h2 className="mt-2 text-xl font-bold sm:text-2xl">Seat &amp; booking statistics</h2>
+            <p className={`mt-2 text-sm leading-6 ${mutedClass}`}>
               {events.length > 0
                 ? `Statistics for ${events[0].title}, the first event returned by the API.`
                 : "Create an event to view statistics."}
             </p>
 
             {!stats ? (
-              <p className="mt-6 rounded-xl bg-slate-50 p-5 text-sm text-slate-500">
-                No statistics available.
-              </p>
+              <p className={`mt-6 rounded-xl bg-slate-50 p-5 text-sm dark:bg-slate-800 ${mutedClass}`}>No statistics available.</p>
             ) : (
               <div className="mt-6 grid gap-6 lg:grid-cols-2">
-                <div className="rounded-2xl bg-slate-50 p-5">
+                <div className="rounded-2xl bg-slate-50 p-5 dark:bg-slate-800">
                   <h3 className="font-bold">Seat availability</h3>
                   <div className="mt-5 space-y-4">
                     {[
@@ -1049,20 +759,15 @@ function AdminDashboard() {
                       ["Locked seats", seatStats.locked_seats],
                       ["Booked seats", seatStats.booked_seats],
                     ].map(([label, value]) => (
-                      <div
-                        key={label}
-                        className="flex items-center justify-between gap-4 text-sm"
-                      >
-                        <span className="text-slate-600">{label}</span>
-                        <span className="font-bold text-[#14213d]">
-                          {value ?? "—"}
-                        </span>
+                      <div key={label} className="flex items-center justify-between gap-4 text-sm">
+                        <span className={mutedClass}>{label}</span>
+                        <span className="font-bold">{value ?? "—"}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="rounded-2xl bg-slate-50 p-5">
+                <div className="rounded-2xl bg-slate-50 p-5 dark:bg-slate-800">
                   <h3 className="font-bold">Booking activity</h3>
                   <div className="mt-5 space-y-4">
                     {[
@@ -1072,26 +777,17 @@ function AdminDashboard() {
                       ["Cancelled", bookingStats.cancelled_bookings],
                       ["Expired", bookingStats.expired_bookings],
                     ].map(([label, value]) => (
-                      <div
-                        key={label}
-                        className="flex items-center justify-between gap-4 text-sm"
-                      >
-                        <span className="text-slate-600">{label}</span>
-                        <span className="font-bold text-[#14213d]">
-                          {value ?? "—"}
-                        </span>
+                      <div key={label} className="flex items-center justify-between gap-4 text-sm">
+                        <span className={mutedClass}>{label}</span>
+                        <span className="font-bold">{value ?? "—"}</span>
                       </div>
                     ))}
                   </div>
 
                   <div className="mt-5 rounded-xl bg-[#14213d] p-4 text-white">
-                    <p className="text-xs text-slate-300">
-                      Reported revenue
-                    </p>
+                    <p className="text-xs text-slate-300">Reported revenue</p>
                     <p className="mt-1 text-2xl font-bold">
-                      {revenue == null
-                        ? "—"
-                        : `₹${Number(revenue).toLocaleString("en-IN")}`}
+                      {revenue == null ? "—" : `₹${Number(revenue).toLocaleString("en-IN")}`}
                     </p>
                   </div>
                 </div>

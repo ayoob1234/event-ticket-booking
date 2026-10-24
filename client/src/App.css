@@ -182,3 +182,130 @@
     border-right-color: var(--border);
   }
 }
+
+
+/* Admin Dashboard theme support */
+.admin-dashboard {
+  background-color: var(--color-page);
+  color: var(--color-text);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Main dashboard surfaces */
+:root[data-theme="dark"] .admin-dashboard .bg-white,
+:root[data-theme="dark"] .admin-dashboard .bg-white\/95 {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text);
+}
+
+:root[data-theme="dark"] .admin-dashboard .bg-slate-50,
+:root[data-theme="dark"] .admin-dashboard .bg-slate-50\/70 {
+  background-color: var(--color-surface-secondary) !important;
+}
+
+:root[data-theme="dark"] .admin-dashboard .bg-slate-100 {
+  background-color: var(--color-surface-secondary) !important;
+}
+
+:root[data-theme="dark"] .admin-dashboard [class*="border-slate-"],
+:root[data-theme="dark"] .admin-dashboard [class*="border-white/"] {
+  border-color: var(--color-border) !important;
+}
+
+/* Text colors */
+:root[data-theme="dark"] .admin-dashboard .text-\[\#14213d\],
+:root[data-theme="dark"] .admin-dashboard .text-slate-700,
+:root[data-theme="dark"] .admin-dashboard .text-slate-600,
+:root[data-theme="dark"] .admin-dashboard .text-slate-500 {
+  color: var(--color-text-secondary) !important;
+}
+
+:root[data-theme="dark"] .admin-dashboard .text-slate-400 {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Form fields */
+:root[data-theme="dark"] .admin-dashboard input,
+:root[data-theme="dark"] .admin-dashboard select,
+:root[data-theme="dark"] .admin-dashboard textarea {
+  background-color: var(--color-input);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+:root[data-theme="dark"] .admin-dashboard input::placeholder,
+:root[data-theme="dark"] .admin-dashboard textarea::placeholder {
+  color: var(--color-text-secondary);
+}
+
+:root[data-theme="dark"] .admin-dashboard option {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Secondary buttons */
+:root[data-theme="dark"] .admin-dashboard button.border-slate-200 {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+:root[data-theme="dark"] .admin-dashboard button.hover\:bg-slate-50:hover,
+:root[data-theme="dark"] .admin-dashboard button.hover\:bg-slate-100:hover {
+  background-color: var(--color-surface-secondary) !important;
+}
+
+/* Keep the sidebar dark and green action buttons visible */
+.admin-dashboard aside {
+  background-color: #14213d;
+  color: #fff;
+}
+
+:root[data-theme="dark"] .admin-dashboard .bg-green-50 {
+  background-color: #123426;
+}
+
+:root[data-theme="dark"] .admin-dashboard .text-green-700 {
+  color: #4ade80;
+}
+
+:root[data-theme="dark"] .admin-dashboard .bg-blue-50 {
+  background-color: #172b45;
+}
+
+:root[data-theme="dark"] .admin-dashboard .border-blue-100 {
+  border-color: #294766;
+}
+
+:root[data-theme="dark"] .admin-dashboard .text-blue-900 {
+  color: #bfdbfe;
+}
+
+:root[data-theme="dark"] .admin-dashboard .bg-amber-50 {
+  background-color: #3b2d16;
+}
+
+:root[data-theme="dark"] .admin-dashboard .text-amber-800,
+:root[data-theme="dark"] .admin-dashboard .text-amber-700 {
+  color: #fcd34d;
+}
+
+:root[data-theme="dark"] .admin-dashboard .bg-red-50 {
+  background-color: #3b1c24;
+}
+
+:root[data-theme="dark"] .admin-dashboard .text-red-700,
+:root[data-theme="dark"] .admin-dashboard .text-red-600 {
+  color: #fca5a5;
+}
+
+:root[data-theme="dark"] .admin-dashboard .border-red-200 {
+  border-color: #7f2939;
+}
+
+:root[data-theme="dark"] .admin-dashboard .border-green-200 {
+  border-color: #236747;
+}
+
+:root[data-theme="dark"] .admin-dashboard .text-green-800 {
+  color: #bbf7d0;
+}
