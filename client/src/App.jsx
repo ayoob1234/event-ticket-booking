@@ -27,7 +27,7 @@ import TicketVerify from "./pages/TicketVerify";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ResendVerification from "./pages/ResendVerification";
-
+import ProtectedRoute from "./ProtectedRoute";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -526,40 +526,48 @@ function App() {
         <Route path="/resend-verification" element={<ResendVerification />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<ProtectedRoute> <Profile /> </ProtectedRoute> } />
         <Route path="/events" element={<Events />} />
         <Route path="/events/:id" element={<EventDetails />} />
-        <Route path="/events/:id/seats" element={<Seats />} />
-        <Route path="/ticket" element={<Ticket />} />
-        <Route path="/my-bookings" element={<MyBookings />} />
+        <Route path="/events/:id/seats" element={  <ProtectedRoute> <Seats /> </ProtectedRoute> } />
+        <Route path="/ticket" element={ <ProtectedRoute> <Ticket /> </ProtectedRoute>  } />
+        <Route path="/my-bookings" element={ <ProtectedRoute> <MyBookings /> </ProtectedRoute> } />
 
         {/* Protected Admin Routes */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          }
-        />
+        
+<Route
+  path="/admin"
+  element={
+    <ProtectedRoute>
+      <AdminRoute>
+        <AdminDashboard />
+      </AdminRoute>
+    </ProtectedRoute>
+  }
+/>
+
 
         <Route
-          path="/admin/events/:id/edit"
-          element={
-            <AdminRoute>
-              <EditEvent />
-            </AdminRoute>
-          }
-        />
+  path="/admin/events/:id/edit"
+  element={
+    <ProtectedRoute>
+      <AdminRoute>
+        <EditEvent />
+      </AdminRoute>
+    </ProtectedRoute>
+  }
+/>
 
-        <Route
-          path="/admin/tickets/verify"
-          element={
-            <AdminRoute>
-              <TicketVerify />
-            </AdminRoute>
-          }
-        />
+       <Route
+  path="/admin/tickets/verify"
+  element={
+    <ProtectedRoute>
+      <AdminRoute>
+        <TicketVerify />
+      </AdminRoute>
+    </ProtectedRoute>
+  }
+/>
       </Routes>
     </BrowserRouter>
   );
